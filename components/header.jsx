@@ -1,10 +1,17 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { Button } from "./ui/button";
 
 const Header = () => {
   const path = usePathname();
@@ -44,17 +51,25 @@ const Header = () => {
           </div>
         )}
         <div className="flex intems-center gap-3 ml-10 md:ml-20">
-             <SignedOut>
-              <SignInButton />
-              <SignUpButton>
-                <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+          <SignedOut>
+            <SignInButton>
+              <Button variant="glass" className="hidden sm:flex">
+                Sign In
+              </Button>
+            </SignInButton>
+            <SignUpButton>
+              <Button variant="primary">Get Started</Button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8",
+              }
+            }}
+             />
+          </SignedIn>
         </div>
       </div>
     </header>
