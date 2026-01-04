@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarLoader } from "react-spinners";
 import { Button } from "./ui/button";
+import { LayoutDashboard } from "lucide-react";
 
 const Header = () => {
   const path = usePathname();
@@ -63,6 +64,13 @@ const Header = () => {
             </SignUpButton>
           </Unauthenticated>
           <Authenticated>
+            <Link href="/dashboard">
+              <Button variant="glass">
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden md:flex">Dashboard</span>
+              </Button>
+            </Link>
+
             <UserButton
               appearance={{
                 elements: {
