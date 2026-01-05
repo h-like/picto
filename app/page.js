@@ -1,15 +1,17 @@
+import HeroSection from "@/components/hero";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Home() {
   return (
    
-   <div className="pt-36">
+   <div >
 
-Hero
-stats
-features
-pricing
+{/* Hero */}
+<HeroSection />
+{/* stats */}
+{/* features */}
+{/* pricing */}
 
 <section className="py-20 text-center" >
 <div className="max-w-4xl mx-auto px-6">
