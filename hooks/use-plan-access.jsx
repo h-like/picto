@@ -17,7 +17,7 @@ export function usePlanAccess() {
         background: isPro,
         ai_extender: isPro,
         ai_edit: isPro,
-    }
+    };
 
     // 특정 toolId에 대해 현재 요금제가 접근 권한을 가지고 있는지 확인한다
     const hasAccess = (toolId) => {

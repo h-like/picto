@@ -3,8 +3,8 @@
 import { useParams } from 'next/navigation'
 import React from 'react'
 
-const Editor = async () => {
-    const { projectId } = await useParams()
+const Editor =  () => {
+    const { projectId } =  useParams()
     return
     (
         <div>

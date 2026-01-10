@@ -30,7 +30,7 @@ export default defineSchema({
         userId: v.id("users"),
 
         // 캔버스 차원과 상태
-        canvaseState: v.any(),  //Fabric.js 상태 직렬화
+        canvasState: v.any(),  //Fabric.js 상태 직렬화
         width: v.number(),      // 캔버스 너비 in pixels
         height: v.number(),     // 캔버스 높이
 

@@ -7,14 +7,15 @@ import { useQuery } from 'convex/react'
 import { Plus, Sparkle } from 'lucide-react'
 import React, { useState } from 'react'
 import { BarLoader } from 'react-spinners'
-import NewProjectModal from './_components/new-project-modal'
+import { NewProjectModal } from './_components/new-project-modal'
+import ProjectGrid from './_components/project-grid'
 
 const Dashboard = () => {
   const [showNewProjectModal, setNewProjectModal] = useState(false);
 
   const { data: projects, isLoading } = useConvexQuery(api.projects.getUserProjects);
 
-  console.log(projects)
+  console.log(projects);
 
 
   return (
@@ -40,8 +41,9 @@ const Dashboard = () => {
         {isLoading ? (
           <BarLoader width={"100%"} color='white' />
         ) : projects && projects.length > 0 ? (
-          <></>
+          <ProjectGrid projects={projects} />
         ) : (
+          
           <div className='flex flex-col items-center justify-center py-20'>
             <h3 className='text-2xl font-semibold text-white mb-3'>
               Create Your First Project
