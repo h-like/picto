@@ -98,7 +98,7 @@ export const deleteProject = mutation({
   },
 });
 
-// Get a single project by ID
+// Get 프로젝트 가져오기 아이디 확인 
 export const getProject = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
