@@ -8,7 +8,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { RingLoader } from "react-spinners";
 import CanvasEditor from "./_components/canvas";
-import { EditorSidebar } from "./_components/editor-sidebar";
+import EditorTopbar from "./_components/editor-topbar";
+import EditorSidebar from "./_components/editor-sidebar";
 
 export default function EditorPage() {
   const params = useParams();
@@ -16,10 +17,10 @@ export default function EditorPage() {
   const [canvasEditor, setCanvasEditor] = useState(null);
   const [processingMessage, setProcessingMessage] = useState(null);
 
-  // State for active tool
+  // 도구 상태 관리
   const [activeTool, setActiveTool] = useState("resize");
 
-  // Get project data
+  // 프로젝트 데이터 get
   const {
     data: project,
     isLoading,
@@ -64,7 +65,7 @@ export default function EditorPage() {
         setProcessingMessage,
       }}
     >
-      {/* Mobile Message - Show on screens smaller than lg (1024px) */}
+      {/* 모바일 메시지 - lg 보다 작은 화면에 표시 (1024px) */}
       <div className="lg:hidden min-h-screen bg-slate-900 flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <Monitor className="h-16 w-16 text-cyan-400 mx-auto mb-6" />
@@ -80,7 +81,7 @@ export default function EditorPage() {
         </div>
       </div>
 
-      {/* Desktop Editor - Show on lg screens and above */}
+      {/* 데스크톱 편집기 - lg 이상 화면에 표시 */}
       <div className="hidden lg:block min-h-screen bg-slate-900">
         <div className="flex flex-col h-screen">
           {processingMessage && (
@@ -98,12 +99,12 @@ export default function EditorPage() {
           )}
 
           {/* Top Bar */}
-          {/* <EditorTopbar project={project} /> */}
+          <EditorTopbar project={project} />
 
           {/* Main Editor Layout */}
           <div className="flex flex-1 overflow-hidden">
             {/* Sidebar */}
-            {/* <EditorSidebar project={project} /> */}
+            <EditorSidebar project={project} />
 
             {/* Canvas Area */}
             <div className="flex-1 bg-slate-800">

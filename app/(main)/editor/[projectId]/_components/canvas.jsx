@@ -30,7 +30,6 @@ function CanvasEditor({ project }) {
   useEffect(() => {
     if (!canvasRef.current || !project || fabricRef.current) return;
 
-
     // [중요] 컴포넌트가 살아있는지 확인하는 플래그
     let isMounted = true;
 
@@ -55,7 +54,7 @@ function CanvasEditor({ project }) {
 
       fabricRef.current = canvas;
 
-      // Sync both lower and upper canvas layers
+      // 하단, 상단 캔버스 레이어 모두 동기화
       canvas.setDimensions(
         {
           width: project.width * viewportScale,
@@ -66,7 +65,7 @@ function CanvasEditor({ project }) {
 
       canvas.setZoom(viewportScale);
 
-      // High DPI handling (optional, comment if you don’t need)
+      // High DPI 처리 (optional)
       const scaleFactor = window.devicePixelRatio || 1;
       if (scaleFactor > 1) {
         canvas.getElement().width = project.width * scaleFactor;
@@ -78,6 +77,8 @@ function CanvasEditor({ project }) {
       if (project.currentImageUrl || project.originalImageUrl) {
         try {
           const imageUrl = project.currentImageUrl || project.originalImageUrl;
+
+          // 외부 이미지 사용 시 canvas export(toDataURL) 보안 오류 방지
           const fabricImage = await FabricImage.fromURL(imageUrl, {
             crossOrigin: "anonymous",
           });
@@ -90,33 +91,42 @@ function CanvasEditor({ project }) {
           const canvasAspectRatio = project.width / project.height;
           let scaleX, scaleY;
 
+          // 이미지 비율을 유지하면서 캔버스 안에 최대한 맞추기 (object-fit: contain)
           if (imgAspectRatio > canvasAspectRatio) {
+            // 이미지가 캔버스보다 가로로 더 긴 비율일 때 (예: 파노라마 사진)
             scaleX = project.width / fabricImage.width;
             scaleY = scaleX;
           } else {
+            // 이미지가 캔버스보다 세로로 더 긴 비율일 때 (예: 초상화 사진) 
             scaleY = project.height / fabricImage.height;
             scaleX = scaleY;
           }
 
           fabricImage.set({
-            left: project.width / 2,
-            top: project.height / 2,
+            left: project.width / 2,    // 캔버스 가로 중앙
+            top: project.height / 2,    // 캔버스 세로 중앙
+
+            // 스케일/회전 시 기준점을 중앙으로 통일
             originX: "center",
             originY: "center",
             scaleX,
             scaleY,
+
+            // 사용자 선택 및 마우스 이벤트 허용
             selectable: true,
             evented: true,
           });
 
-          canvas.add(fabricImage);
+          canvas.add(fabricImage);    // 캔버스에 객체 추가
+
+          // Fabric 내부 좌표 오차 보정을 위한 안전한 중앙 정렬
           canvas.centerObject(fabricImage);
         } catch (error) {
           console.error("Error loading project image:", error);
         }
       }
 
-      // Load saved canvas state
+      // 캔버스 상태 불러오기
       if (project.canvasState) {
         try {
           await canvas.loadFromJSON(project.canvasState);
@@ -124,13 +134,13 @@ function CanvasEditor({ project }) {
           // [방어 코드 2] 기다리는 동안 언마운트 되었으면 멈춤
           if (!isMounted || !fabricRef.current) return;
 
-          canvas.requestRenderAll();
+          canvas.requestRenderAll();  // 데이터 로드했으니, 새로고침해라!
         } catch (error) {
           console.error("Error loading canvas state:", error);
         }
       }
 
-// [방어 코드 3] 마지막으로 렌더링하기 전에도 확인
+      // [방어 코드 3] 마지막으로 렌더링하기 전에도 확인
       if (!isMounted || !fabricRef.current) return
 
       canvas.calcOffset();
@@ -138,7 +148,7 @@ function CanvasEditor({ project }) {
       setCanvasEditor(canvas);
 
       setTimeout(() => {
-        // workaround for initial resize issues
+        // 초기 크기 조정 이벤트 트리거
         if (isMounted) {
             window.dispatchEvent(new Event("resize"));
         }
@@ -156,7 +166,7 @@ function CanvasEditor({ project }) {
       if (fabricRef.current) {
         // 이미 dispose된 캔버스를 또 dispose 하지 않도록 try-catch 감싸는 것도 좋음
         try {
-            fabricRef.current.dispose();
+            fabricRef.current.dispose();  // Fabric.js 클린업 메서드
         } catch (e) {
             console.warn("Dispose error ignored:", e);
         }
