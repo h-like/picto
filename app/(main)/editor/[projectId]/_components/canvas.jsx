@@ -213,6 +213,7 @@ function CanvasEditor({ project }) {
     };
   }, [canvasEditor]);
 
+  // 캔버스 커서 모양 변경
   useEffect(() => {
     if (!canvasEditor) return;
 
