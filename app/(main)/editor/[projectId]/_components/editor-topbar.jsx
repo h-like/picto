@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { UpgradeModal } from "@/components/upgrade-modal";
 import { useCanvas } from "@/context/context";
 import { usePlanAccess } from "@/hooks/use-plan-access";
 import {
@@ -73,7 +74,15 @@ const EditorTopbar = ({ project }) => {
     router.push("/dashboard");
   };
 
-  const handleToolChange = (toolId) => {};
+  const handleToolChange = (toolId) => {
+    if (!hasAccess(toolId)) {
+      setRestrictedTool(toolId);
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    onToolChange(toolId);
+  };
 
   return (
     <>
@@ -124,8 +133,8 @@ const EditorTopbar = ({ project }) => {
           </div>
 
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="text-white" >
-              <RotateCcw  className="h-4 w-4"/>
+            <Button variant="ghost" size="sm" className="text-white">
+              <RotateCcw className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" className="text-white">
               <RotateCw className="h-4 w-4" />
@@ -133,6 +142,20 @@ const EditorTopbar = ({ project }) => {
           </div>
         </div>
       </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => {
+          setShowUpgradeModal(false);
+          setRestrictedTool(null);
+        }}
+        restrictedTool={restrictedTool}
+        reason={
+          restrictedTool === "export"
+            ? "Free plan is limited to 20 exports per month. Upgrade to Pro for unlimited exports."
+            : undefined
+        }
+      />
     </>
   );
 };
