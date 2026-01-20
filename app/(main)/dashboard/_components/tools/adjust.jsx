@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { useCanvas } from "@/context/context";
 import { filters } from "fabric";
 import { RotateCcw } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const FILTER_CONFIGS = [
   {
@@ -64,6 +64,17 @@ const FILTER_CONFIGS = [
     transform: (value) => value / 100,
   },
   {
+    key: "noise",
+    label: "Noise",
+    min: 0,
+    max: 1000,
+    step: 1,
+    defaultValue: 0,
+    filterClass: filters.Noise,
+    valueKey: "noise",
+    transform: (value) => value,
+  },
+  {
     key: "hue",
     label: "Hue",
     min: -180,
@@ -112,7 +123,7 @@ const AdjustControls = () => {
         if (value !== config.defaultValue) {
           const transformValue = config.transform(value);
           filtersToApply.push(
-            new config.filterClass({ [config.valueKey]: transformValue })
+            new config.filterClass({ [config.valueKey]: transformValue }),
           );
         }
       });
@@ -140,10 +151,43 @@ const AdjustControls = () => {
     applyFilters(newValue);
   };
 
+  // 리셋 필터
   const restFilters = () => {
     setFilterValues(DEFAULT_VALUES);
     applyFilters(DEFAULT_VALUES);
   };
+
+  const extractFilterValues = (imageObject) => {
+    if (!imageObject?.filters?.length) return DEFAULT_VALUES;
+
+    const extractedValues = { ...DEFAULT_VALUES };
+
+    imageObject.filters.forEach((filter) => {
+      const config = FILTER_CONFIGS.find(
+        (c) => c.filterClass.name === filter.constructor.name,
+      );
+      if (config) {
+        const filterValue = filter[config.valueKey];
+        if (config.key === "hue") {
+          extractedValues[config.key] = Math.round(
+            filterValue * (180 / Math.PI),
+          );
+        } else {
+          extractedValues[config.key] = Math.round(filterValue * 100);
+        }
+      }
+    });
+
+    return extractedValues;
+  };
+
+  useEffect(() => {
+    const imageObject = getActiveImage();
+    if (imageObject?.filters) {
+      const existingValues = extractFilterValues(imageObject);
+      setFilterValues(existingValues);
+    }
+  }, []);
 
   if (!canvasEditor) {
     return (
@@ -196,7 +240,7 @@ const AdjustControls = () => {
       })}
 
       {/* info */}
-      <div className="mt-6 bg-slate-700/50 rounded-b-lg">
+      <div className="mt-6 p-3 bg-slate-700/50 rounded-lg">
         <p className="text-xs text-white/70">
           Adjustments are applied in real-time. Use the Reset button to restore
           original values.
