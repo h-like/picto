@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { useCanvas } from "@/context/context";
 import { api } from "@/convex/_generated/api";
 import { useConvexMutation } from "@/hooks/use-convex-query";
-import { Lock, Monitor, Unlock } from "lucide-react";
-import React, { useState } from "react";
+import { Expand, Lock, Monitor, Unlock } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const ASPECT_RATIOS = [
   { name: "Instagram Story", ratio: [9, 16], label: "9:16" },
@@ -53,6 +54,17 @@ const ResizeControls = ({ project }) => {
     isLoading,
   } = useConvexMutation(api.projects.updateProject);
 
+  useEffect(() => {
+    setTimeout(() => {
+        // 초기 크기 조정 이벤트 트리거
+        if (!isLoading && data) {
+            setTimeout(() => {
+              window.dispatchEvent(new Event("resize"));
+            }, 500);
+        }
+      }, 500);
+  }, [data, isLoading]);
+  
   const calculateAspectRatioDimensions = (ratio) => {
     if (!project) return { width: project.width, height: project.height };
 
@@ -72,6 +84,70 @@ const ResizeControls = ({ project }) => {
     setNewWidth(dimensions.width);
     setNewHeight(dimensions.height);
     setSelectedPreset(aspectRatio.name);
+  };
+
+  // 뷰포트 스케일 계산
+  const calculateViewportScale = () => {
+    const container = canvasEditor.getElement().parentNode;
+    if (!container) return 1;
+
+    const containerWidth = container.clientWidth - 40;
+    const containerHeight = container.clientHeight - 40;
+
+    const scaleX = containerWidth / project.width;
+    const scaleY = containerHeight / project.height;
+
+    return Math.min(scaleX, scaleY, 1);
+  };
+
+  // 캔버스 리사이즈 처리
+  const handleApplyResize = async () => {
+        if (
+      !canvasEditor ||
+      !project ||
+      (newWidth === project.width && newHeight === project.height)
+    ) {
+      return; // 유효하지 않은 상태일 때 함수 종료
+    }
+    setProcessingMessage("Resizing canvas...");
+
+    try {
+      // canvasEditor.setWidth(newWidth); // 캔버스 너비 설정
+      // canvasEditor.setHeight(newHeight); // 캔버스 높이 설정
+      canvasEditor.setDimensions(
+        {
+          width: newWidth,
+          height: newHeight,
+        }
+      )
+
+      const viewportScale = calculateViewportScale();
+
+      canvasEditor.setDimensions(
+        {
+          width: newWidth * viewportScale, // 뷰포트에 맞게 크기 조정
+          height: newHeight * viewportScale, // 뷰포트에 맞게 크기 조정
+        },
+        { backstoreOnly: false }, // 두 캔버스 레이어 업데이트
+      );
+
+      canvasEditor.setZoom(viewportScale); // 뷰포트 스케일로 줌 설정
+      canvasEditor.calcOffset(); // 오프셋 재계산
+      canvasEditor.requestRenderAll(); // 캔버스 다시 렌더링
+
+      // 백엔드에 프로젝트 크기 업데이트
+      await updateProject({
+        projectId: project._id,
+        width: newWidth,
+        height: newHeight,
+        canvasState: canvasEditor.toJSON(),
+      });
+    } catch (error) {
+      console.error("Error resizing canvas:", error);
+      toast.error("Failed to resize canvas. Please try again.");
+    } finally {
+      setProcessingMessage(null);
+    }
   };
 
   if (!canvasEditor || !project) {
@@ -180,6 +256,50 @@ const ResizeControls = ({ project }) => {
       </div>
 
       {/* 변화 */}
+      {hasChanges && (
+        <div className="bg-slate-700/30 rounded-lg p-3">
+          <h4 className="text-sm font-medium text-white mb-2">
+            New Size Preview
+          </h4>
+
+          <div className="text-xs text-white/70">
+            <div>
+              New Canvas: {newWidth} × {newHeight} pixels
+            </div>
+            <div className="text-cyan-400">
+              {newWidth > project.width || newHeight > project.height
+                ? "Canvas will be expanded"
+                : "Canvas will be cropped"}
+            </div>
+          </div>
+
+          <div className="text-white/50 mt-1">
+            Objects will maintain their current size and position
+          </div>
+        </div>
+      )}
+
+      {/* 적용 버튼 */}
+      <Button
+        onClick={handleApplyResize}
+        disabled={!hasChanges || processingMessage} // 변경 사항이 없거나 처리 중일 때 비활성화
+        className="w-full"
+        variant="primary"
+      >
+        <Expand className="h-4 w-4 mr-2" />
+        Apply Resize
+      </Button>
+
+      <div className="bg-slate-700/30 rounded-lg p-3">
+        <p className="text-xs text-white/70">
+          <strong>Resize Canvas:</strong> Changes canvas dimensions.
+          <br />
+          <strong>Aspect Ratios:</strong> Smart sizing based on your current
+          canvas.
+          <br />
+          Objects maintain their size and position.
+        </p>
+      </div>
     </div>
   );
 };
