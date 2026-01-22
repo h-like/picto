@@ -55,16 +55,16 @@ const ResizeControls = ({ project }) => {
   } = useConvexMutation(api.projects.updateProject);
 
   useEffect(() => {
-    setTimeout(() => {
+    if (!isLoading && data) {
+      setTimeout(() => {
         // 초기 크기 조정 이벤트 트리거
-        if (!isLoading && data) {
-            setTimeout(() => {
-              window.dispatchEvent(new Event("resize"));
-            }, 500);
-        }
+        window.dispatchEvent(new Event("resize"));
       }, 500);
+
+      // window.location.reload(); // 변경 사항 적용을 위해 페이지 새로고침
+    }
   }, [data, isLoading]);
-  
+
   const calculateAspectRatioDimensions = (ratio) => {
     if (!project) return { width: project.width, height: project.height };
 
@@ -102,7 +102,7 @@ const ResizeControls = ({ project }) => {
 
   // 캔버스 리사이즈 처리
   const handleApplyResize = async () => {
-        if (
+    if (
       !canvasEditor ||
       !project ||
       (newWidth === project.width && newHeight === project.height)
@@ -114,12 +114,10 @@ const ResizeControls = ({ project }) => {
     try {
       // canvasEditor.setWidth(newWidth); // 캔버스 너비 설정
       // canvasEditor.setHeight(newHeight); // 캔버스 높이 설정
-      canvasEditor.setDimensions(
-        {
-          width: newWidth,
-          height: newHeight,
-        }
-      )
+      canvasEditor.setDimensions({
+        width: newWidth,
+        height: newHeight,
+      });
 
       const viewportScale = calculateViewportScale();
 
