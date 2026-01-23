@@ -2,16 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/context/context";
-import { Rect, Circle } from "fabric";
+import { Rect, Circle, FabricImage } from "fabric";
+import { scale } from "framer-motion";
 import {
+  CheckCheck,
   Crop,
   Maximize,
   RectangleHorizontal,
   RectangleVertical,
   Smartphone,
   Square,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const ASPECT_RATIOS = [
   { label: "Freeform", value: null, icon: Maximize },
@@ -45,10 +49,10 @@ const CropContent = () => {
     return objects.find((obj) => obj.type === "image") || null;
   };
 
+  // Initialize crop mode when tool becomes active
   useEffect(() => {
     if (activeTool === "crop" && canvasEditor && isCropMode) {
       const image = getActiveImage();
-
       if (image) {
         initializeCropMode(image);
       }
@@ -57,6 +61,7 @@ const CropContent = () => {
     }
   }, [activeTool, canvasEditor]);
 
+  // Cleanup when component unmounts
   useEffect(() => {
     return () => {
       if (isCropMode) {
@@ -65,9 +70,41 @@ const CropContent = () => {
     };
   }, []);
 
-  const exitCropMode = () => {};
+  const exitCropMode = () => {
+    if (!isCropMode) return;
 
-  const createCropRectangle = () => {
+    removeAllCropRectangles();
+    setCropRect(null);
+
+     if (selectedImage && originalProps) {
+      selectedImage.set({
+        selectable: originalProps.selectable,
+        evented: originalProps.evented,
+        // Restore other properties if needed
+        left: originalProps.left,
+        top: originalProps.top,
+        scaleX: originalProps.scaleX,
+        scaleY: originalProps.scaleY,
+        angle: originalProps.angle,
+      });
+
+       // Select the restored image
+      canvasEditor.setActiveObject(selectedImage);
+    }
+
+    setIsCropMode(false);
+    setSelectedImage(null);
+    setOriginalProps(null);
+    setSelectedRatio(null);
+
+    if (canvasEditor) {
+      canvasEditor.requestRenderAll();
+    }
+
+    console.log("Crop mode cleanup complete");
+  };
+
+  const createCropRectangle = (image) => {
     const bounds = image.getBoundingRect();
 
     const cropRectangle = new Rect({
@@ -75,28 +112,24 @@ const CropContent = () => {
       top: bounds.top + bounds.height * 0.1,
       width: bounds.width * 0.8,
       height: bounds.height * 0.8,
-
       fill: "transparent",
       stroke: "#00bcd4",
       strokeWidth: 2,
       strokeDashArray: [5, 5],
-
       selectable: true,
       evented: true,
-      name: "crop-rectangle",
-
-      // 스타일링
+      name: "cropRect",
       cornerColor: "#00bcd4",
       cornerSize: 12,
       transparentCorners: false,
       cornerStyle: "circle",
       borderColor: "#00bcd4",
       borderScaleFactor: 1,
-
       // Add a custom property to identify crop rectangles
       isCropRectangle: true,
     });
 
+    // Add custom control behavior
     cropRectangle.on("scaling", (e) => {
       const rect = e.target;
 
@@ -116,20 +149,31 @@ const CropContent = () => {
     });
 
     // 캔버스에 자르기 사각형 추가 및 활성화
-     canvasEditor.add(cropRectangle);
+    canvasEditor.add(cropRectangle);
     canvasEditor.setActiveObject(cropRectangle);
     setCropRect(cropRectangle);
   };
 
   const removeAllCropRectangles = () => {
     if (!canvasEditor) return;
+
+    const objects = canvasEditor.getObjects();
+    const rectsToRemove = objects.filter((obj) => obj.type === "rect");
+
+    rectsToRemove.forEach((rect) => {
+      canvasEditor.remove(rect);
+    });
+
+    canvasEditor.requestRenderAll();
   };
 
   const initializeCropMode = (image) => {
     if (!image || isCropMode) return;
 
+    // First, remove any existing crop rectangles
     removeAllCropRectangles();
 
+    // Store original image properties
     const original = {
       left: image.left,
       top: image.top,
@@ -146,13 +190,96 @@ const CropContent = () => {
     setSelectedImage(image);
     setIsCropMode(true);
 
+    // Make image non-selectable to prevent default scaling
     image.set({
       selectable: false,
       evented: false,
     });
 
+    // Create crop rectangle overlay
     createCropRectangle(image);
+
     canvasEditor.requestRenderAll();
+  };
+
+  const applyAspectRatio = (ratio) => {
+    setSelectedRatio(ratio);
+
+    if (!cropRect || ratio === null) return;
+
+    const currentWidth = cropRect.width * cropRect.scaleX;
+    const newHeight = currentWidth / ratio;
+
+    cropRect.set({
+      height: newHeight / cropRect.scaleX,
+      scaleY: cropRect.scaleX, // 가로 세로 비율을 동일하게 유지
+    });
+
+    canvasEditor.requestRenderAll();
+  };
+
+  const applyCrop = async () => {
+    if (!selectedImage || !cropRect) return;
+
+    try {
+      // 크롭 영역의 경계 계산
+      const cropBounds = cropRect.getBoundingRect();
+      const imageBounds = selectedImage.getBoundingRect();
+
+      // 원본 이미지의 좌표계에 맞게 크롭 영역 계산
+      const cropX = Math.max(0, cropBounds.left - imageBounds.left);
+      const cropY = Math.max(0, cropBounds.top - imageBounds.top);
+      const cropWidth = Math.min(cropBounds.width, imageBounds.width - cropX);
+      const cropHeight = Math.min(
+        cropBounds.height,
+        imageBounds.height - cropY,
+      );
+
+      // Convert to image coordinate system (accounting for image scaling)
+      const imageScaleX = selectedImage.scaleX || 1;
+      const imageScaleY = selectedImage.scaleY || 1;
+
+      const actualCropX = cropX / imageScaleX;
+      const actualCropY = cropY / imageScaleY;
+      const actualCropWidth = cropWidth / imageScaleX;
+      const actualCropHeight = cropHeight / imageScaleY;
+
+      const croppedImage = new FabricImage(selectedImage._element, {
+        left: cropBounds.left + cropBounds.width / 2,
+        top: cropBounds.top + cropBounds.height / 2,
+
+        originX: "center",
+        originY: "center",
+        selectable: true,
+        evented: true,
+
+        // Apply crop using Fabric.js crop properties
+        cropX: actualCropX,
+        cropY: actualCropY,
+        width: actualCropWidth,
+        height: actualCropHeight,
+        scaleX: imageScaleX,
+        scaleY: imageScaleY,
+      });
+
+      // Replace the original image
+      canvasEditor.remove(selectedImage);
+      canvasEditor.add(croppedImage);
+      canvasEditor.setActiveObject(croppedImage);
+      canvasEditor.requestRenderAll();
+
+      // Exit crop mode
+      exitCropMode();
+    } catch (error) {
+      console.error("Error applying crop:", error);
+      toast.error("Failed to apply crop. Please try again.");
+      exitCropMode();
+    }
+  };
+
+   // Cancel crop and reset
+  const cancelCrop = () => {
+    exitCropMode();
   };
 
   if (!canvasEditor) {
@@ -163,7 +290,14 @@ const CropContent = () => {
     );
   }
 
-  const activeImage = getActiveImage();
+   const activeImage = getActiveImage();
+  if (!activeImage && !isCropMode) {
+    return (
+      <div className="p-4">
+        <p className="text-white/70 text-sm">Select an image to crop</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -188,6 +322,70 @@ const CropContent = () => {
           Start Cropping
         </Button>
       )}
+
+      {/* Aspect Ratio Selection - Only show in crop mode */}
+      {isCropMode && (
+        <div>
+          <h3 className="text-sm font-medium text-white mb-3">
+            Crop Aspect Ratios
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {ASPECT_RATIOS.map((ratio) => {
+              const IconComponent = ratio.icon;
+              return (
+                <button
+                  key={ratio.label}
+                  onClick={() => applyAspectRatio(ratio.value)}
+                  className={`text-center p-3 border rounded-lg transition-colors cursor-pointer ${
+                    selectedRatio === ratio.value
+                      ? "border-cyan-400 bg-cyan-400/10"
+                      : "border-white/20 hover:border-white/40 hover:bg-white/5"
+                  }`}
+                >
+                  <IconComponent className="h-6 w-6 mx-auto mb-2 text-white" />
+                  <div className="text-xs text-white">{ratio.label}</div>
+                  {ratio.ratio && (
+                    <div className="text-xs text-white/70">{ratio.ratio}</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {isCropMode && (
+        <div className="space-y-3 pt-4 border-t border-white/10">
+          <Button onClick={applyCrop} className="w-full" variant="primary">
+            <CheckCheck className="h-4 w-4 mr-2" />
+            Apply Crop
+          </Button>
+
+          {/* <Button
+            onClick={() => exitCropMode()}
+            variant="outline"
+            className="w-full"
+          > */}
+          <Button onClick={cancelCrop} variant="outline" className="w-full">
+            <X className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+        </div>
+      )}
+
+      <div className="bg-slate-700/30 rounded-lg p-3">
+        <p className="text-xs text-white/70">
+          <strong>How to crop:</strong>
+          <br />
+          1. Click "Start Cropping"
+          <br />
+          2. Drag the blue rectangle to select crop area
+          <br />
+          3. Choose aspect ratio (optional)
+          <br />
+          4. Click "Apply Crop" to finalize
+        </p>
+      </div>
     </div>
   );
 };
