@@ -1,4 +1,5 @@
 import AdjustControls from "@/app/(main)/dashboard/_components/tools/adjust";
+import BackgroundControls from "@/app/(main)/dashboard/_components/tools/ai-background";
 import CropContent from "@/app/(main)/dashboard/_components/tools/crop";
 import ResizeControls from "@/app/(main)/dashboard/_components/tools/resize";
 import { useCanvas } from "@/context/context";
@@ -9,7 +10,7 @@ import {
   Maximize2,
   Palette,
   Sliders,
-  Text
+  Text,
 } from "lucide-react";
 
 const TOOL_CONFIGS = {
@@ -72,7 +73,9 @@ const EditorSidebar = ({ project }) => {
         </div>
         <p className="text-sm text-white mt-1">{toolConfig.description}</p>
       </div>
-      <div className="flex-1 p-4 overflow-y-scroll">{renderToolConfig(activeTool, project)}</div>
+      <div className="flex-1 p-4 overflow-y-scroll">
+        {renderToolConfig(activeTool, project)}
+      </div>
     </div>
   );
 };
@@ -84,6 +87,8 @@ function renderToolConfig(activeTool, project) {
       return <ResizeControls project={project} />;
     case "adjust":
       return <AdjustControls />;
+    case "background":
+      return <BackgroundControls project={project} />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;
