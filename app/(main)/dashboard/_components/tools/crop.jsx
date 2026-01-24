@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/context/context";
-import { Rect, Circle, FabricImage } from "fabric";
-import { scale } from "framer-motion";
+import { FabricImage, Rect } from "fabric";
 import {
   CheckCheck,
   Crop,
@@ -41,6 +40,7 @@ const CropContent = () => {
 
   const getActiveImage = () => {
     if (!canvasEditor) return null;
+    
     const activeObject = canvasEditor.getActiveObject();
 
     if (activeObject && activeObject.type === "image") return activeObject;
