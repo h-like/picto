@@ -2,6 +2,7 @@ import AdjustControls from "@/app/(main)/dashboard/_components/tools/adjust";
 import BackgroundControls from "@/app/(main)/dashboard/_components/tools/ai-background";
 import CropContent from "@/app/(main)/dashboard/_components/tools/crop";
 import ResizeControls from "@/app/(main)/dashboard/_components/tools/resize";
+import TextControls from "@/app/(main)/dashboard/_components/tools/text";
 import { useCanvas } from "@/context/context";
 import {
   Crop,
@@ -89,6 +90,8 @@ function renderToolConfig(activeTool, project) {
       return <AdjustControls />;
     case "background":
       return <BackgroundControls project={project} />;
+    case "text":
+      return <TextControls />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;
