@@ -15,6 +15,7 @@ import {
   Underline,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const FONT_FAMILIES = [
   "Arial",
@@ -26,20 +27,23 @@ const FONT_FAMILIES = [
   "Verdana",
   "Comic Sans MS",
   "Impact",
+  "Playfair Display",
+
   "Momo Signature",
   "Roboto",
-  "Nanum Gothic",
   "Archivo Black",
   "Russo One",
   "EB Garamond",
   "Courgette",
   "Bungee",
-  "Noto Sans Korean",
+  "Noto Sans KR",    // <-- Korean이 아니라 KR입니다
+  "Noto Serif KR",   // <-- Korean이 아니라 KR입니다
   "Jua",
-  "Do Hyeon",
-  "Noto Serif Korean",
   "Hi Melody",
   "Kirang Haerang",
+  "Do Hyeon",
+  "Nanum Gothic",
+  "Rubik Storm",
 ];
 
 const FONT_SIZES = { min: 8, max: 120, default: 20 };
@@ -118,42 +122,16 @@ const TextControls = () => {
     }
   }, [canvasEditor]);
 
-  // [추가] 선택된 폰트가 시스템 폰트가 아니면 동적으로 로드
-  useEffect(() => {
-    // 1. 이미 설치되어 있는 기본 폰트 목록 (다운로드 불필요)
-    const systemFonts = [
-      "Arial",
-      "Arial Black",
-      "Helvetica",
-      "Times New Roman",
-      "Courier New",
-      "Georgia",
-      "Verdana",
-      "Comic Sans MS",
-      "Impact",
-    ];
-
-    // 2. 현재 선택된 폰트가 기본 폰트이거나 없으면 중단
-    if (!fontFamily || systemFonts.includes(fontFamily)) return;
-
-    // 3. 폰트 ID 생성 (중복 다운로드 방지용)
-    const fontId = `font-${fontFamily.replace(/\s+/g, "-")}`;
-    if (document.getElementById(fontId)) return;
-
-    // 4. 구글 폰트 링크 생성 및 다운로드
-    const link = document.createElement("link");
-    link.id = fontId;
-    link.rel = "stylesheet";
-    // 구글 폰트 URL 형식에 맞춰 공백을 '+'로 변경
-    link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, "+")}&display=swap`;
-
-    document.head.appendChild(link);
-  }, [fontFamily]); // properties.fontFamily -> fontFamily로 변경됨
-
   // 폰트 적용
-  const applyFontFamily = (family) => {
+  const applyFontFamily = async (family) => {
     if (!selectedText) return;
     setFontFamily(family);
+    try {
+      await document.fonts.load(`1em "${family}"`);
+    } catch (e) {
+      console.warn("Font loading check failed, attempting to render anyway.", e);
+      toast.error("Font loading check failed, attempting to render anyway.", e)
+    }
     selectedText.set("fontFamily", family);
     canvasEditor.requestRenderAll();
   };
