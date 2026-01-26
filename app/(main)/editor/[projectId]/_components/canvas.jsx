@@ -515,7 +515,7 @@ function CanvasEditor({ project }) {
     return () => window.removeEventListener("resize", handleResize);
   }, [canvasEditor, project]);
 
-  // Handle automatic tab switching when text is selected
+  // 텍스트를 선택하면 자동 탭 전환 처리
   useEffect(() => {
     if (!canvasEditor || !onToolChange) return;
 

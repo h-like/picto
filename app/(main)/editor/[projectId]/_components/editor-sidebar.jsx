@@ -1,5 +1,6 @@
 import AdjustControls from "@/app/(main)/dashboard/_components/tools/adjust";
 import BackgroundControls from "@/app/(main)/dashboard/_components/tools/ai-background";
+import AIExtendControls from "@/app/(main)/dashboard/_components/tools/ai-extend";
 import CropContent from "@/app/(main)/dashboard/_components/tools/crop";
 import ResizeControls from "@/app/(main)/dashboard/_components/tools/resize";
 import TextControls from "@/app/(main)/dashboard/_components/tools/text";
@@ -92,6 +93,8 @@ function renderToolConfig(activeTool, project) {
       return <BackgroundControls project={project} />;
     case "text":
       return <TextControls />;
+    case "ai_extender":
+      return <AIExtendControls project={project} />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;
