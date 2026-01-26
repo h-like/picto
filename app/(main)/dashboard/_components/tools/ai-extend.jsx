@@ -1,11 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useCanvas } from "@/context/context";
 import { api } from "@/convex/_generated/api";
 import { useConvexMutation } from "@/hooks/use-convex-query";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
+import { FabricImage } from "fabric";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Wand2 } from "lucide-react";
 import React, { useState } from "react";
+import { toast } from "sonner";
 
 const DIRECTIONS = [
   { key: "top", label: "Top", icon: ArrowUp },
@@ -47,6 +50,111 @@ const AIExtendControls = ({ project }) => {
     );
   };
 
+  const calculateDimensions = () => {
+    const image = getMainImage();
+    if (!image || !selectedDirection) return { width: 0, height: 0 };
+
+    const currentWidth = image.width * (image.scaleX || 1);
+    const currentHeight = image.height * (image.scaleY || 1);
+
+    const isHorizontal = ["left", "right"].includes(selectedDirection);
+    const isVertical = ["top", "bottom"].includes(selectedDirection);
+
+    return {
+      //
+      width: Math.round(currentWidth + (isHorizontal ? extensionAmount : 0)),
+      height: Math.round(currentHeight + (isVertical ? extensionAmount : 0)),
+    };
+  };
+
+   const buildExtensionUrl = (imageUrl) => {
+    if (!imageUrl || !selectedDirection) return imageUrl;
+
+    // Always use the base URL without existing transformations to avoid duplicates
+    const baseUrl = imageUrl.split("?")[0];
+    const { width, height } = calculateDimensions();
+
+    const transformations = [
+      "bg-genfill",
+      `w-${width}`,
+      `h-${height}`,
+      "cm-pad_resize",
+    ];
+
+    // Add focus positioning
+    const focus = FOCUS_MAP[selectedDirection];
+    if (focus) transformations.push(focus);
+
+    return `${baseUrl}?tr=${transformations.join(",")}`;
+  };
+
+   const applyExtension = async () => {
+    const mainImage = getMainImage();
+    if (!mainImage || !selectedDirection) return;
+
+    setProcessingMessage("Extending image with AI...");
+
+    try {
+      const currentImageUrl = getImageSrc(mainImage);
+      const extendedUrl = buildExtensionUrl(currentImageUrl);
+
+      const extendedImage = await FabricImage.fromURL(extendedUrl, {
+        crossOrigin: "anonymous",
+      });
+
+      // Scale to fit canvas
+      const scale = Math.min(
+        project.width / extendedImage.width,
+        project.height / extendedImage.height,
+        1
+      );
+
+      extendedImage.set({
+        left: project.width / 2,
+        top: project.height / 2,
+        originX: "center",
+        originY: "center",
+        scaleX: scale,
+        scaleY: scale,
+        selectable: true,
+        evented: true,
+      });
+
+      // Replace image
+      canvasEditor.remove(mainImage);
+      canvasEditor.add(extendedImage);
+      canvasEditor.setActiveObject(extendedImage);
+      canvasEditor.requestRenderAll();
+
+      // Save to database
+      await updateProject({
+        projectId: project._id,
+        currentImageUrl: extendedUrl,
+        canvasState: canvasEditor.toJSON(),
+      });
+
+      toast.success("Image Extended Successfuly")
+      setSelectedDirection(null);
+    } catch (error) {
+      console.error("Error applying extension:", error);
+      toast.error("Failed to extend image. Please try again.");
+    } finally {
+      setProcessingMessage(null);
+    }
+  };
+
+
+  const { width, height } = calculateDimensions();
+
+  const { width: newWidth, height: newHeight } = calculateDimensions();
+
+  const currentImage = getMainImage();
+
+  const selectDirection = (direction) => {
+    // 동일한 방향 선택 시 선택 취소
+    setSelectedDirection((prev) => (prev === direction ? null : direction));
+  };
+
   if (hasBackgroundRemoval()) {
     return (
       <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
@@ -61,32 +169,8 @@ const AIExtendControls = ({ project }) => {
     );
   }
 
-  const calculateDimensions = () => {
-    const image = getMainImage();
-    if (!image || !selectedDirection) return { width: 0, height: 0 };
-
-    const currentWidth = image.width * (image.scaleX || 1);
-    const currentHeight = image.height * (image.scaleY || 1);
-
-    const isHorizontal = ["left", "right"].includes(selectedDirection);
-    const isVertical = ["top", "bottom"].includes(selectedDirection);
-
-    return {
-      width: Math.round(currentWidth + (isHorizontal ? extensionAmount : 0)),
-      height: Math.round(currentHeight + (isVertical ? extensionAmount : 0)),
-    };
-  };
-
-  const { width, height } = calculateDimensions();
-  
-    const selectDirection = (direction) => {
-    // 동일한 방향 선택 시 선택 취소
-    setSelectedDirection((prev) => (prev === direction ? null : direction));
-  };
-
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-105">
       {/* Direction Selection */}
       <div>
         <h3 className="text-sm font-medium text-white mb-3">
@@ -111,6 +195,70 @@ const AIExtendControls = ({ project }) => {
           ))}
         </div>
       </div>
+
+      {/* 확장 */}
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-sm text-white">Extension Amount</label>
+          <span className="text-xs text-white/70">{extensionAmount}px</span>
+        </div>
+        <Slider
+          value={[extensionAmount]}
+          onValueChange={([value]) => setExtensionAmount(value)}
+          min={50}
+          max={500}
+          step={25}
+          className="w-full"
+          disabled={!selectedDirection}
+        />
+      </div>
+
+      {selectedDirection && (
+        <div className="bg-slate-700/30 rounded-lg p-3">
+          <h4 className="text-sm font-medium text-white mb-2">
+            Extension Preview
+          </h4>
+          <div className="text-xs text-white/70 space-y-1">
+            <div>
+              Current:
+              {Math.round(
+                currentImage.width * (currentImage.scaleX || 1),
+              )} ×{" "}
+              {Math.round(currentImage.height * (currentImage.scaleY || 1))}px
+            </div>
+            <div className="text-cyan-400">
+              Extended: {newWidth} × {newHeight}px
+            </div>
+            <div className="text-white/50">
+              Canvas: {project.width} × {project.height}px (unchanged)
+            </div>
+            <div className="text-cyan-300">
+              Direction:
+              {DIRECTIONS.find((d) => d.key === selectedDirection)?.label}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 적용 */}
+      <Button
+        onClick={applyExtension}
+        disabled={!selectedDirection}
+        className="w-full"
+        variant="primary"
+      >
+        <Wand2 className="h-4 w-4 mr-2" />
+        Apply AI Extension
+      </Button>
+      {/* 안내 */}
+       <div className="bg-slate-700/30 rounded-lg p-3">
+        <p className="text-xs text-white/70">
+          <strong>How it works:</strong> Select one direction → Set amount →
+          Apply extension. AI will intelligently fill the new area in that
+          direction.
+        </p>
+      </div>
+
     </div>
   );
 };

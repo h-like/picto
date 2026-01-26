@@ -36,8 +36,8 @@ const FONT_FAMILIES = [
   "EB Garamond",
   "Courgette",
   "Bungee",
-  "Noto Sans KR",    // <-- Korean이 아니라 KR입니다
-  "Noto Serif KR",   // <-- Korean이 아니라 KR입니다
+  "Noto Sans KR", 
+  "Noto Serif KR", 
   "Jua",
   "Hi Melody",
   "Kirang Haerang",
@@ -122,6 +122,22 @@ const TextControls = () => {
     }
   }, [canvasEditor]);
 
+  useEffect(() => {
+    if (!fontFamily) return;
+
+    const fontId = `font-${fontFamily.replace(/\s+/g, '-')}`;
+    if (document.getElementById(fontId)) return;
+
+    const link = document.createElement('link');
+    link.id = fontId;
+    link.rel = 'stylesheet';
+    
+    link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}&display=swap`;
+
+    document.head.appendChild(link);
+
+  }, [fontFamily]); 
+
   // 폰트 적용
   const applyFontFamily = async (family) => {
     if (!selectedText) return;
@@ -129,12 +145,17 @@ const TextControls = () => {
     try {
       await document.fonts.load(`1em "${family}"`);
     } catch (e) {
-      console.warn("Font loading check failed, attempting to render anyway.", e);
-      toast.error("Font loading check failed, attempting to render anyway.", e)
+      console.warn(
+        "Font loading check failed, attempting to render anyway.",
+        e,
+      );
+      toast.error("Font loading check failed, attempting to render anyway.", e);
     }
     selectedText.set("fontFamily", family);
     canvasEditor.requestRenderAll();
   };
+
+
 
   // 폰트 사이즈 적용
   const applyFontSize = (size) => {
