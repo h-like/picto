@@ -1,5 +1,6 @@
 import AdjustControls from "@/app/(main)/dashboard/_components/tools/adjust";
 import BackgroundControls from "@/app/(main)/dashboard/_components/tools/ai-background";
+import AIEdit from "@/app/(main)/dashboard/_components/tools/ai-edit";
 import AIExtendControls from "@/app/(main)/dashboard/_components/tools/ai-extend";
 import CropContent from "@/app/(main)/dashboard/_components/tools/crop";
 import ResizeControls from "@/app/(main)/dashboard/_components/tools/resize";
@@ -65,7 +66,7 @@ const EditorSidebar = ({ project }) => {
   const Icon = toolConfig.icon;
 
   return (
-    <div className="min-w-96 border-r flex flex-col">
+    <div className="min-w-96 max-w-105 border-r flex flex-col">
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
           <Icon className="h-5 w-5 text-white" />
@@ -95,6 +96,8 @@ function renderToolConfig(activeTool, project) {
       return <TextControls />;
     case "ai_extender":
       return <AIExtendControls project={project} />;
+    case "ai_edit":
+      return <AIEdit project={project} />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;

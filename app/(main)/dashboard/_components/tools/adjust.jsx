@@ -200,7 +200,7 @@ const AdjustControls = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-105">
+    <div className="space-y-6 ">
       {/* 리셋 버튼  */}
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-medium text-white">Image Adjustments</h3>

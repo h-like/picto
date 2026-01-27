@@ -170,7 +170,7 @@ const AIExtendControls = ({ project }) => {
   }
 
   return (
-    <div className="space-y-6 max-w-105">
+    <div className="space-y-6 ">
       {/* Direction Selection */}
       <div>
         <h3 className="text-sm font-medium text-white mb-3">
