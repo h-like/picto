@@ -1,18 +1,20 @@
 import AdjustControls from "@/app/(main)/dashboard/_components/tools/adjust";
+import BackgroundControls from "@/app/(main)/dashboard/_components/tools/ai-background";
+import AIEdit from "@/app/(main)/dashboard/_components/tools/ai-edit";
+import AIExtendControls from "@/app/(main)/dashboard/_components/tools/ai-extend";
 import CropContent from "@/app/(main)/dashboard/_components/tools/crop";
 import ResizeControls from "@/app/(main)/dashboard/_components/tools/resize";
+import TextControls from "@/app/(main)/dashboard/_components/tools/text";
 import { useCanvas } from "@/context/context";
 import {
   Crop,
   Expand,
   Eye,
-  Icon,
   Maximize2,
   Palette,
   Sliders,
   Text,
 } from "lucide-react";
-import React from "react";
 
 const TOOL_CONFIGS = {
   resize: {
@@ -64,7 +66,7 @@ const EditorSidebar = ({ project }) => {
   const Icon = toolConfig.icon;
 
   return (
-    <div className="min-w-96 border-r flex flex-col">
+    <div className="min-w-96 max-w-105 border-r flex flex-col">
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
           <Icon className="h-5 w-5 text-white" />
@@ -74,7 +76,9 @@ const EditorSidebar = ({ project }) => {
         </div>
         <p className="text-sm text-white mt-1">{toolConfig.description}</p>
       </div>
-      <div className="flex-1 p-4">{renderToolConfig(activeTool, project)}</div>
+      <div className="flex-1 p-4 overflow-y-scroll">
+        {renderToolConfig(activeTool, project)}
+      </div>
     </div>
   );
 };
@@ -86,6 +90,14 @@ function renderToolConfig(activeTool, project) {
       return <ResizeControls project={project} />;
     case "adjust":
       return <AdjustControls />;
+    case "background":
+      return <BackgroundControls project={project} />;
+    case "text":
+      return <TextControls />;
+    case "ai_extender":
+      return <AIExtendControls project={project} />;
+    case "ai_edit":
+      return <AIEdit project={project} />;
 
     default:
       return <div className="text-white">Select a tool to get started</div>;
