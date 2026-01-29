@@ -1,0 +1,14 @@
+{
+  "Header": {
+    "features": "기능",
+    "pricing": "가격",
+    "contact": "문의",
+    "dashboard": "대시보드",
+    "signin": "로그인",
+    "getStarted": "시작하기"
+  },
+  "Hero": {
+    "title": "한계를 뛰어넘는 창작",
+    "subtitle": "AI로 완성하는 전문가급 이미지 편집."
+  }
+}

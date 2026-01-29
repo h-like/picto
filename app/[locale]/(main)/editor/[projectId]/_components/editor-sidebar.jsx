@@ -1,10 +1,10 @@
-import AdjustControls from "@/app/(main)/dashboard/_components/tools/adjust";
-import BackgroundControls from "@/app/(main)/dashboard/_components/tools/ai-background";
-import AIEdit from "@/app/(main)/dashboard/_components/tools/ai-edit";
-import AIExtendControls from "@/app/(main)/dashboard/_components/tools/ai-extend";
-import CropContent from "@/app/(main)/dashboard/_components/tools/crop";
-import ResizeControls from "@/app/(main)/dashboard/_components/tools/resize";
-import TextControls from "@/app/(main)/dashboard/_components/tools/text";
+import AdjustControls from "@/app/[locale]/(main)/dashboard/_components/tools/adjust";
+import BackgroundControls from "@/app/[locale]/(main)/dashboard/_components/tools/ai-background";
+import AIEdit from "@/app/[locale]/(main)/dashboard/_components/tools/ai-edit";
+import AIExtendControls from "@/app/[locale]/(main)/dashboard/_components/tools/ai-extend";
+import CropContent from "@/app/[locale]/(main)/dashboard/_components/tools/crop";
+import ResizeControls from "@/app/[locale]/(main)/dashboard/_components/tools/resize";
+import TextControls from "@/app/[locale]/(main)/dashboard/_components/tools/text";
 import { useCanvas } from "@/context/context";
 import {
   Crop,

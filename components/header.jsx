@@ -9,10 +9,12 @@ import { usePathname } from "next/navigation";
 import { BarLoader } from "react-spinners";
 import { Button } from "./ui/button";
 import { LayoutDashboard } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const Header = () => {
   const path = usePathname();
   const { isLoading } = useStoreUser();
+  const t = useTranslations("Header");
 
   if (path.includes("/editor")) {
     return null; //편집 시 헤더 숨기기
@@ -36,7 +38,8 @@ const Header = () => {
               href="#features"
               className="text-white font-medium transition-all duration-300 hover:text-cyan-400 cursor-pointer"
             >
-              Features
+              {/* Features */}
+              {t("features")}
             </Link>
             <Link
               href="#pricing"
@@ -56,11 +59,12 @@ const Header = () => {
           <Unauthenticated>
             <SignInButton>
               <Button variant="glass" className="hidden sm:flex">
-                Sign In
+                {/* Sign In */}
+                 {t("signin")}
               </Button>
             </SignInButton>
             <SignUpButton>
-              <Button variant="primary">Get Started</Button>
+              <Button variant="primary">{t("getStarted")}</Button>
             </SignUpButton>
           </Unauthenticated>
           <Authenticated>

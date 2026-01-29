@@ -1,12 +1,5 @@
-import { ThemeProvider } from "@/components/theme-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import FloatingShapes from "@/components/floating-shapes";
-import Header from "@/components/header";
-import { ConvexClientProvider } from "./ConvexClientProvider";
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark, neobrutalism, shadesOfPurple } from "@clerk/themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,30 +8,13 @@ export const metadata = {
   description: "AI Image Editor",
 };
 
+// 여기서는 html과 body만 남깁니다.
+// Header나 Provider는 자식 레이아웃([locale]/layout.js)으로 위임합니다.
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className}`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ClerkProvider appearance={{
-            baseTheme: shadesOfPurple
-          }}>
-            <ConvexClientProvider>
-              <Header />
-              <main className="bg-slate-900 min-h-screen text-white overflow-x-hidden">
-                <FloatingShapes />
-                <Toaster richColors />
-                {children}
-              </main>
-            </ConvexClientProvider>
-          </ClerkProvider>
-        </ThemeProvider>
-      </body>
+    // lang 속성은 middleware나 자식에서 제어하겠지만, 기본 구조는 유지합니다.
+    <html suppressHydrationWarning>
+      <body className={`${inter.className}`}>{children}</body>
     </html>
   );
 }
