@@ -8,8 +8,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { RingLoader } from "react-spinners";
 import CanvasEditor from "./_components/canvas";
-import EditorTopbar from "./_components/editor-topbar";
 import EditorSidebar from "./_components/editor-sidebar";
+import EditorTopbar from "./_components/editor-topbar";
 
 export default function EditorPage() {
   const params = useParams();

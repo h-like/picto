@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -36,9 +34,10 @@ import {
   Text,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+// (툴바 메뉴 및 내보내기 포맷)
 const TOOLS = [
   {
     id: "resize",
@@ -110,21 +109,28 @@ const EXPORT_FORMATS = [
 
 const EditorTopbar = ({ project }) => {
   const router = useRouter();
+
+  // --- UI 상태 관리 (모달, 툴 제한 등) ---
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [restrictedTool, setRestrictedTool] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState(null);
 
   const { activeTool, onToolChange, canvasEditor } = useCanvas();
   const { hasAccess, canExport, isFree } = usePlanAccess();
 
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportFormat, setExportFormat] = useState(null);
-
   // Undo/Redo 상태
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  // Undo/Redo 동작 중에 이벤트 리스너가 중복 실행되는 것을 막기 위한 플래그
   const [isUndoRedoOperation, setIsUndoRedoOperation] = useState(false);
 
-  // Use the loading states from the hooks
+  // --- 디바운싱을 위한 Refs ---
+  // 리렌더링 시에도 타이머 ID를 유지하기 위해 useRef 사용
+  const debounceTimerRef = useRef(null);
+  const isInitializedRef = useRef(false);
+
+  // Convex API 연동
   const { mutate: updateProject, isLoading: isSaving } = useConvexMutation(
     api.projects.updateProject,
   );
@@ -134,6 +140,7 @@ const EditorTopbar = ({ project }) => {
     router.push("/dashboard");
   };
 
+  // 툴 변경 핸들러 (권한 체크 포함)
   const handleToolChange = (toolId) => {
     if (!hasAccess(toolId)) {
       setRestrictedTool(toolId);
@@ -144,26 +151,27 @@ const EditorTopbar = ({ project }) => {
     onToolChange(toolId);
   };
 
+  // 초기화 로직: 원본 이미지로 리셋
   const handleResetToOriginal = async () => {
     if (!canvasEditor || !project || !project.originalImageUrl) {
       toast.error("No original image found to reset to");
       return;
     }
-    // Save state before reset for undo
+    // 리셋 전 상태를 Undo 스택에 저장 (실수 방지)
     saveToUndoStack();
 
     try {
-      // Clear canvas and reset state
+      // 1. 캔버스 초기화
       canvasEditor.clear();
       canvasEditor.backgroundColor = "#ffffff";
       canvasEditor.backgroundImage = null;
 
-      // Load original image
+      // 2. 원본 이미지 로드
       const fabricImage = await FabricImage.fromURL(project.originalImageUrl, {
         crossOrigin: "anonymous",
       });
 
-      // Calculate proper scaling
+      // 3. 이미지 비율에 맞춰 스케일 계산 (화면에 꽉 차게)
       const imgAspectRatio = fabricImage.width / fabricImage.height;
       const canvasAspectRatio = project.width / project.height;
       const scale =
@@ -188,7 +196,7 @@ const EditorTopbar = ({ project }) => {
       canvasEditor.setActiveObject(fabricImage);
       canvasEditor.requestRenderAll();
 
-      // Save the reset state
+      // 4. DB 업데이트
       const canvasJSON = canvasEditor.toJSON();
       await updateProject({
         projectId: project._id,
@@ -205,7 +213,7 @@ const EditorTopbar = ({ project }) => {
     }
   };
 
-  // save 버튼 저장
+  // 수동 저장 핸들러
   const handleManualSave = async () => {
     try {
       await updateProject({
@@ -219,76 +227,99 @@ const EditorTopbar = ({ project }) => {
     }
   };
 
-  // 캔버스 상태 저장 undo stack 뒤돌리기
-  const saveToUndoStack = () => {
+  // --- Undo/Redo: 상태 저장 함수 ---
+  // useCallback을 사용하여 불필요한 함수 재생성 방지
+  const saveToUndoStack = useCallback(() => {
+    // 캔버스가 없거나, Undo/Redo 실행 중이면 저장하지 않음 (무한 루프 방지)
     if (!canvasEditor || isUndoRedoOperation) return;
 
+    // Fabric.js 객체를 JSON 문자열로 직렬화 (깊은 복사 효과)
     const canvasState = JSON.stringify(canvasEditor.toJSON());
 
     setUndoStack((prev) => {
+      // (선택) 이전 상태와 완전히 동일하면 스택에 쌓지 않음
+      if (prev.length > 0 && prev[prev.length - 1] === canvasState) {
+        return prev;
+      }
+
       const newStack = [...prev, canvasState];
-      // Limit undo stack to 20 items to prevent memory issues
+      // 메모리 관리를 위해 스택 크기를 20개로 제한
       if (newStack.length > 20) {
         newStack.shift();
       }
       return newStack;
     });
 
-    // Clear redo stack when new action is performed
+    // 새로운 동작이 발생하면 Redo 스택은 초기화 (미래 삭제)
     setRedoStack([]);
-  };
+  }, [canvasEditor, isUndoRedoOperation]);
 
-  // Setup undo/redo 리스너
+  // --- 이벤트 리스너 등록 및 디바운스 처리 (핵심 로직) ---
   useEffect(() => {
     if (!canvasEditor) return;
 
-    // Save initial state
-    setTimeout(() => {
-      if (canvasEditor && !isUndoRedoOperation) {
-        const initialState = JSON.stringify(canvasEditor.toJSON());
-        setUndoStack([initialState]);
-      }
-    }, 1000);
+    // 1. 초기 상태 저장 (컴포넌트 마운트 시 최초 1회)
+    if (!isInitializedRef.current && undoStack.length === 0) {
+      const initialState = JSON.stringify(canvasEditor.toJSON());
+      setUndoStack([initialState]);
+      isInitializedRef.current = true;
+    }
 
+    // 2. 변경 감지 핸들러 (Debounce 적용)
+    // 연속된 이벤트(예: 드래그) 중 마지막 상태만 저장하여 성능 최적화
     const handleCanvasModified = () => {
-      if (!isUndoRedoOperation) {
-        // Debounce state saving to avoid too many saves
-        setTimeout(() => {
-          if (!isUndoRedoOperation) {
-            saveToUndoStack();
-          }
-        }, 500);
+      // Undo/Redo 중 발생한 이벤트는 무시
+      if (isUndoRedoOperation) return;
+
+      // 이미 대기 중인 저장이 있다면 취소 (타이머 리셋)
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
+
+      // 500ms 동안 추가 입력이 없으면 저장 실행
+      debounceTimerRef.current = setTimeout(() => {
+        saveToUndoStack();
+        debounceTimerRef.current = null; // 실행 후 타이머 ID 초기화
+      }, 500);
     };
 
-    // Listen to canvas events that should trigger state save
+    // 3. Fabric.js 이벤트 바인딩
+    // 'object:modified': 변형 완료 시 (드래그 종료 등)
+    // 'path:created': 드로잉 완료 시
     canvasEditor.on("object:modified", handleCanvasModified);
     canvasEditor.on("object:added", handleCanvasModified);
     canvasEditor.on("object:removed", handleCanvasModified);
     canvasEditor.on("path:created", handleCanvasModified);
 
+    // 4. Cleanup: 컴포넌트 언마운트 시 리스너 및 타이머 제거
     return () => {
       canvasEditor.off("object:modified", handleCanvasModified);
       canvasEditor.off("object:added", handleCanvasModified);
       canvasEditor.off("object:removed", handleCanvasModified);
       canvasEditor.off("path:created", handleCanvasModified);
-    };
-  }, [canvasEditor, isUndoRedoOperation]);
 
-  // Undo function
+      // 컴포넌트가 언마운트 될 때만 타이머 취소
+      // (주의: 여기서는 타이머를 취소하지 않는 게 나을 수도 있지만, 메모리 누수 방지를 위해 취소함)
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [canvasEditor, saveToUndoStack, isUndoRedoOperation, undoStack.length]);
+
+  // --- Undo 실행 ---
   const handleUndo = async () => {
     if (!canvasEditor || undoStack.length <= 1) return;
 
     setIsUndoRedoOperation(true);
 
     try {
-      // Move current state to redo stack
+      // 현재 상태를 Redo 스택으로 이동
       const currentState = JSON.stringify(canvasEditor.toJSON());
       setRedoStack((prev) => [...prev, currentState]);
 
-      // Remove last state from undo stack and apply the previous one
+      // Undo 스택에서 이전 상태 꺼내기
       const newUndoStack = [...undoStack];
-      newUndoStack.pop(); // Remove current state
+      newUndoStack.pop(); /// 현재 상태 제거
       const previousState = newUndoStack[newUndoStack.length - 1];
 
       if (previousState) {
@@ -301,27 +332,27 @@ const EditorTopbar = ({ project }) => {
       console.error("Error during undo:", error);
       toast.error("Failed to undo action");
     } finally {
+      // 상태 복원 완료 후 플래그 해제 (약간의 지연을 두어 이벤트 충돌 방지)
       setTimeout(() => setIsUndoRedoOperation(false), 100);
     }
   };
 
-  // Redo function
+  // --- Redo 실행 ---
   const handleRedo = async () => {
     if (!canvasEditor || redoStack.length === 0) return;
 
     setIsUndoRedoOperation(true);
 
     try {
-      // Get the latest state from redo stack
       const newRedoStack = [...redoStack];
-      const nextState = newRedoStack.pop();
+      const nextState = newRedoStack.pop(); // 가장 최근의 Redo 상태 꺼내기
 
       if (nextState) {
-        // Save current state to undo stack
+        // 현재 상태를 다시 Undo 스택에 저장
         const currentState = JSON.stringify(canvasEditor.toJSON());
         setUndoStack((prev) => [...prev, currentState]);
 
-        // Apply the redo state
+        //Redo 상태 적용
         await canvasEditor.loadFromJSON(JSON.parse(nextState));
         canvasEditor.requestRenderAll();
         setRedoStack(newRedoStack);
@@ -339,14 +370,14 @@ const EditorTopbar = ({ project }) => {
   const canUndo = undoStack.length > 1;
   const canRedo = redoStack.length > 0;
 
-  // 캔버스를 이미지로 내보내기
+  //--- 이미지 내보내기 (Export) ---
   const handleExport = async (exportConfig) => {
     if (!canvasEditor || !project) {
       toast.error("Canvas not ready for export");
       return;
     }
 
-    // 무료 사용자의 수출 한도 확인
+    // 권한 체크 (Free 유저 제한)
     if (!canExport(user?.exportsThisMonth || 0)) {
       setRestrictedTool("export");
       setShowUpgradeModal(true);
@@ -357,11 +388,11 @@ const EditorTopbar = ({ project }) => {
     setExportFormat(exportConfig.format);
 
     try {
-      // 복원을 위해 현재 캔버스 상태 저장
+      // 1. 현재 줌/위치 저장 (내보내기는 원본 크기로 해야 하므로)
       const currentZoom = canvasEditor.getZoom();
       const currentViewportTransform = [...canvasEditor.viewportTransform];
 
-      // 정확한 내보내기를 위해 줌 및 뷰포트 재설정
+      // 2. 캔버스를 원본 크기(100%) 및 0,0 좌표로 임시 리셋
       canvasEditor.setZoom(1);
       canvasEditor.setViewportTransform([1, 0, 0, 1, 0, 0]);
       canvasEditor.setDimensions({
@@ -370,14 +401,14 @@ const EditorTopbar = ({ project }) => {
       });
       canvasEditor.requestRenderAll();
 
-      // 캔버스 내보내기
+      // 3. 이미지 데이터 생성
       const dataURL = canvasEditor.toDataURL({
         format: exportConfig.format.toLowerCase(),
         quality: exportConfig.quality,
         multiplier: 1,
       });
 
-      // 원래 캔버스 상태 복원
+      // 4. 화면 뷰포트 복원 (사용자가 보던 상태로 되돌림)
       canvasEditor.setZoom(currentZoom);
       canvasEditor.setViewportTransform(currentViewportTransform);
       canvasEditor.setDimensions({
@@ -386,7 +417,7 @@ const EditorTopbar = ({ project }) => {
       });
       canvasEditor.requestRenderAll();
 
-      // 다운로드 이미지
+      // 5. 브라우저 다운로드 트리거
       const link = document.createElement("a");
       link.download = `${project.title}.${exportConfig.extension}`;
       link.href = dataURL;
@@ -408,6 +439,7 @@ const EditorTopbar = ({ project }) => {
     <>
       <div className="border-b px-6 py-3">
         <div className="flex items-center justify-between mb-4">
+          {/* 상단 헤더: 뒤로가기, 제목, 액션 버튼(Reset, Save, Export) */}
           <Button
             variant="ghost"
             size="sm"
@@ -461,7 +493,7 @@ const EditorTopbar = ({ project }) => {
               )}
             </Button>
 
-            {/* 출력 드롭다운 버튼 */}
+            {/* 출력(Export) 드롭다운 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -514,7 +546,7 @@ const EditorTopbar = ({ project }) => {
 
                 <DropdownMenuSeparator className="bg-slate-700" />
 
-                {/* 내보내기 제한 free 유저는 */}
+                {/* Free 유저 제한 안내 */}
                 {isFree && (
                   <div className="px-3 py-2 text-xs text-white/50">
                     Free Plan: {user?.exportsThisMonth || 0}/20 exports this
@@ -531,6 +563,7 @@ const EditorTopbar = ({ project }) => {
           </div>
         </div>
 
+        {/* 하단 툴바: 편집 도구 및 Undo/Redo 컨트롤 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {TOOLS.map((tool) => {
