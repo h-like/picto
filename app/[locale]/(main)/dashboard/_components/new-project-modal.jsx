@@ -111,7 +111,7 @@ export function NewProjectModal({ isOpen, onClose }) {
     } catch (error) {
       console.error("Error creating project:", error);
       toast.error(
-        error.message || "Failed to create project. Please try again."
+        error.message || "Failed to create project. Please try again.",
       );
     } finally {
       setIsUploading(false);

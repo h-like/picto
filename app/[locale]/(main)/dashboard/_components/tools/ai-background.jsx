@@ -121,7 +121,7 @@ const BackgroundControls = ({ project }) => {
     }
   };
 
-   // 캔버스 배경 제거 (both color and image)
+  // 캔버스 배경 제거 (both color and image)
   const handleRemoveBackground = () => {
     if (!canvasEditor) return;
 
@@ -170,8 +170,8 @@ const BackgroundControls = ({ project }) => {
        * 프로젝트 기준 논리적 캔버스 크기 사용
        * (비율 계산 정확도 향상)
        */
-      const canvasWidth = project.width; 
-      const canvasHeight = project.height; 
+      const canvasWidth = project.width;
+      const canvasHeight = project.height;
 
       // 가로 / 세로 기준 스케일 비율 계산
       const scaleX = canvasWidth / fabricImage.width;

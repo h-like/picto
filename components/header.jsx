@@ -3,18 +3,20 @@
 import useStoreUser from "@/hooks/user-store-user";
 import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
+import { LayoutDashboard } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarLoader } from "react-spinners";
 import { Button } from "./ui/button";
-import { LayoutDashboard } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 const Header = () => {
   const path = usePathname();
   const { isLoading } = useStoreUser();
   const t = useTranslations("Header");
+
+  const isHome = path === "/" || path === "/ko" || path === "/en";
 
   if (path.includes("/editor")) {
     return null; //편집 시 헤더 숨기기
@@ -32,7 +34,7 @@ const Header = () => {
             height={24}
           />
         </Link>
-        {path === "/" && (
+        {isHome && (
           <div className="hidden md:flex space-x-6">
             <Link
               href="#features"
@@ -45,13 +47,13 @@ const Header = () => {
               href="#pricing"
               className="text-white font-medium transition-all duration-300 hover:text-cyan-400 cursor-pointer"
             >
-              Pricing
+              {t("pricing")}
             </Link>
             <Link
               href="#contact"
               className="text-white font-medium transition-all duration-300 hover:text-cyan-400 cursor-pointer"
             >
-              Contact
+              {t("contact")}
             </Link>
           </div>
         )}
@@ -60,7 +62,7 @@ const Header = () => {
             <SignInButton>
               <Button variant="glass" className="hidden sm:flex">
                 {/* Sign In */}
-                 {t("signin")}
+                {t("signin")}
               </Button>
             </SignInButton>
             <SignUpButton>
@@ -71,7 +73,7 @@ const Header = () => {
             <Link href="/dashboard">
               <Button variant="glass">
                 <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden md:flex">Dashboard</span>
+                <span className="hidden md:flex"> {t("dashboard")}</span>
               </Button>
             </Link>
 

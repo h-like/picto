@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 const ProjectCard = ({ project, onEdit }) => {
   const { mutate: deleteProject, isLoading } = useConvexMutation(
-    api.projects.deleteProject
+    api.projects.deleteProject,
   );
 
   const lastUpdated = formatDistanceToNow(new Date(project.updatedAt), {
@@ -18,7 +18,7 @@ const ProjectCard = ({ project, onEdit }) => {
 
   const handleDelete = async () => {
     const confirmed = confirm(
-      `Are you sure you want to delete the project "${project.title}"? This action cannot be undone.`
+      `Are you sure you want to delete the project "${project.title}"? This action cannot be undone.`,
     );
     if (confirmed) {
       try {

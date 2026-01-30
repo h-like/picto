@@ -36,8 +36,8 @@ const FONT_FAMILIES = [
   "EB Garamond",
   "Courgette",
   "Bungee",
-  "Noto Sans KR", 
-  "Noto Serif KR", 
+  "Noto Sans KR",
+  "Noto Serif KR",
   "Jua",
   "Hi Melody",
   "Kirang Haerang",
@@ -125,18 +125,17 @@ const TextControls = () => {
   useEffect(() => {
     if (!fontFamily) return;
 
-    const fontId = `font-${fontFamily.replace(/\s+/g, '-')}`;
+    const fontId = `font-${fontFamily.replace(/\s+/g, "-")}`;
     if (document.getElementById(fontId)) return;
 
-    const link = document.createElement('link');
+    const link = document.createElement("link");
     link.id = fontId;
-    link.rel = 'stylesheet';
-    
-    link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}&display=swap`;
+    link.rel = "stylesheet";
+
+    link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, "+")}&display=swap`;
 
     document.head.appendChild(link);
-
-  }, [fontFamily]); 
+  }, [fontFamily]);
 
   // 폰트 적용
   const applyFontFamily = async (family) => {
@@ -154,8 +153,6 @@ const TextControls = () => {
     selectedText.set("fontFamily", family);
     canvasEditor.requestRenderAll();
   };
-
-
 
   // 폰트 사이즈 적용
   const applyFontSize = (size) => {

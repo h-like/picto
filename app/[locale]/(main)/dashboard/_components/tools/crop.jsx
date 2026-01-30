@@ -40,7 +40,7 @@ const CropContent = () => {
 
   const getActiveImage = () => {
     if (!canvasEditor) return null;
-    
+
     const activeObject = canvasEditor.getActiveObject();
 
     if (activeObject && activeObject.type === "image") return activeObject;
@@ -76,7 +76,7 @@ const CropContent = () => {
     removeAllCropRectangles();
     setCropRect(null);
 
-     if (selectedImage && originalProps) {
+    if (selectedImage && originalProps) {
       selectedImage.set({
         selectable: originalProps.selectable,
         evented: originalProps.evented,
@@ -88,7 +88,7 @@ const CropContent = () => {
         angle: originalProps.angle,
       });
 
-       // Select the restored image
+      // Select the restored image
       canvasEditor.setActiveObject(selectedImage);
     }
 
@@ -277,7 +277,7 @@ const CropContent = () => {
     }
   };
 
-   // Cancel crop and reset
+  // Cancel crop and reset
   const cancelCrop = () => {
     exitCropMode();
   };
@@ -290,7 +290,7 @@ const CropContent = () => {
     );
   }
 
-   const activeImage = getActiveImage();
+  const activeImage = getActiveImage();
   if (!activeImage && !isCropMode) {
     return (
       <div className="p-4">

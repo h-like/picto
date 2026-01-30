@@ -8,7 +8,40 @@
     "getStarted": "getStarted"
   },
   "Hero": {
-    "title": "한계를 뛰어넘는 창작",
-    "subtitle": "AI로 완성하는 전문가급 이미지 편집."
+    "title": {
+      "highlight": "Create",
+      "main": "Without Limits"
+    },
+    "description": "Professional image editing powered by AI. Crop, resize, adjust colors, remove backgrounds, and enhance your images with cutting-edge technology.",
+    "cta": {
+      "start": "Start Creating",
+      "demo": "Watch Demo"
+    }
+  },
+  "features": {
+    "smart_crop": {
+      "title": "Smart Crop & Resize",
+      "description": "Interactive cropping with aspect ratio constraints and intelligent resizing that preserves image quality across any dimension."
+    },
+    "color_adj": {
+      "title": "Color & Light Adjustment",
+      "description": "Professional-grade brightness, contrast, saturation controls with real-time preview and auto-enhance capabilities."
+    },
+    "bg_removal": {
+      "title": "AI Background Removal",
+      "description": "Remove or replace backgrounds instantly using advanced AI that detects complex edges and fine details with precision."
+    },
+    "content_editor": {
+      "title": "AI Content Editor",
+      "description": "Edit images with natural language prompts. Remove objects, change elements, or add new content using generative AI."
+    },
+    "img_extender": {
+      "title": "Image Extender",
+      "description": "Expand your canvas in any direction with AI-powered generative fill that seamlessly blends new content with existing images."
+    },
+    "upscaler": {
+      "title": "AI Upscaler",
+      "description": "Enhance image resolution up to 4x using AI upscaling technology that preserves details and reduces artifacts."
+    }
   }
 }

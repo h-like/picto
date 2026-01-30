@@ -67,7 +67,7 @@ const AIExtendControls = ({ project }) => {
     };
   };
 
-   const buildExtensionUrl = (imageUrl) => {
+  const buildExtensionUrl = (imageUrl) => {
     if (!imageUrl || !selectedDirection) return imageUrl;
 
     // Always use the base URL without existing transformations to avoid duplicates
@@ -88,7 +88,7 @@ const AIExtendControls = ({ project }) => {
     return `${baseUrl}?tr=${transformations.join(",")}`;
   };
 
-   const applyExtension = async () => {
+  const applyExtension = async () => {
     const mainImage = getMainImage();
     if (!mainImage || !selectedDirection) return;
 
@@ -106,7 +106,7 @@ const AIExtendControls = ({ project }) => {
       const scale = Math.min(
         project.width / extendedImage.width,
         project.height / extendedImage.height,
-        1
+        1,
       );
 
       extendedImage.set({
@@ -133,7 +133,7 @@ const AIExtendControls = ({ project }) => {
         canvasState: canvasEditor.toJSON(),
       });
 
-      toast.success("Image Extended Successfuly")
+      toast.success("Image Extended Successfuly");
       setSelectedDirection(null);
     } catch (error) {
       console.error("Error applying extension:", error);
@@ -142,7 +142,6 @@ const AIExtendControls = ({ project }) => {
       setProcessingMessage(null);
     }
   };
-
 
   const { width, height } = calculateDimensions();
 
@@ -251,14 +250,13 @@ const AIExtendControls = ({ project }) => {
         Apply AI Extension
       </Button>
       {/* 안내 */}
-       <div className="bg-slate-700/30 rounded-lg p-3">
+      <div className="bg-slate-700/30 rounded-lg p-3">
         <p className="text-xs text-white/70">
           <strong>How it works:</strong> Select one direction → Set amount →
           Apply extension. AI will intelligently fill the new area in that
           direction.
         </p>
       </div>
-
     </div>
   );
 };

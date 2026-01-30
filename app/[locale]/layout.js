@@ -3,13 +3,13 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 // 기존 layout.js에 있던 임포트들을 여기로 가져옵니다.
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import { ConvexClientProvider } from "@/app/ConvexClientProvider"; // 경로 주의 (@/app/...)
 import FloatingShapes from "@/components/floating-shapes";
 import Header from "@/components/header"; // Header 이동!
-import { ConvexClientProvider } from "@/app/ConvexClientProvider"; // 경로 주의 (@/app/...)
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark, neobrutalism, shadesOfPurple } from "@clerk/themes";
+import { shadesOfPurple } from "@clerk/themes";
 
 export default async function LocaleLayout({ children, params }) {
   // 1. URL에서 locale(언어) 정보를 가져옵니다.
