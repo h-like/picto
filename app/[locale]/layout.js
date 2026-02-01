@@ -21,7 +21,7 @@ export default async function LocaleLayout({ children, params }) {
   }
 
   // 2. 해당 언어의 번역 메시지를 서버에서 가져옵니다.
-  const messages = await getMessages();
+  const messages = await getMessages({});
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
@@ -38,7 +38,6 @@ export default async function LocaleLayout({ children, params }) {
       >
         <ClerkProvider appearance={{ baseTheme: shadesOfPurple }}>
           <ConvexClientProvider>
-            {/* Header가 이제 번역 Provider 안에 들어왔으므로 에러가 사라집니다. */}
             <Header />
 
             <main className="bg-slate-900 min-h-screen text-white overflow-x-hidden">

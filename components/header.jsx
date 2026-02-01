@@ -27,7 +27,7 @@ const Header = () => {
       <div className="backdrop-blur-md bg-white/10 border-white/20 rounded-full px-8 py-3 flex items-center justify-between gap-8">
         <Link href="/" className="mr-10 md:mr-20">
           <Image
-            src="/logo-text.png"
+            src="/logo-3-big.png"
             alt="Pixxel Logo"
             className="min-w-24 object-cover"
             width={96}
