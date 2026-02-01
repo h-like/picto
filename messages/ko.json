@@ -18,7 +18,15 @@
       "demo": "데모 보기"
     }
   },
+  "Home": {
+    "imageProcessed": "처리된 이미지 수",
+    "activeUsers": "활성 사용자 수",
+    "aiTransformations": "AI 변환 횟수",
+    "userSatisfaction": "사용자 만족도"
+  },
   "features": {
+    "title": "강력한 AI 편집 기능",
+    "subtitle": "최신 AI 기술을 기반으로 이미지 생성부터 편집, 보정까지 한 번에 해결할 수 있는 전문가급 도구를 제공합니다",
     "smart_crop": {
       "title": "스마트 크롭 & 리사이즈",
       "description": "비율 가이드에 맞춘 정교한 자르기부터 화질 저하 없는 지능형 리사이징까지, 어떤 규격이든 완벽하게 맞춰드립니다."
@@ -42,6 +50,73 @@
     "upscaler": {
       "title": "AI 업스케일러",
       "description": "디테일은 살리고 노이즈는 줄였습니다. AI 업스케일링 기술을 통해 이미지 해상도를 최대 4배까지 향상시킬 수 있습니다."
+    }
+  },
+  "pricing": {
+    "title_prefix": "간편하고 명확한",
+    "title_highlight": "요금제",
+    "description": "무료로 시작하고 필요할 때 업그레이드하세요. 숨겨진 비용 없이 언제든 취소할 수 있습니다.",
+    "most_popular": "가장 인기",
+    "per_month": "/월",
+    "current_plan": "이용 중인 플랜",
+    "error_message": "문제가 발생했습니다",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "button": "무료로 시작하기",
+        "features": {
+          "projects": "프로젝트 최대 3개",
+          "exports": "월 20회 내보내기",
+          "crop_resize": "기본 자르기 및 크기 조정",
+          "color_adjust": "색상 조정",
+          "text_tool": "텍스트 도구"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "button": "Pro로 업그레이드",
+        "features": {
+          "projects": "프로젝트 무제한",
+          "exports": "내보내기 무제한",
+          "tools": "모든 편집 도구 사용",
+          "ai_bg": "AI 배경 제거",
+          "ai_extend": "AI 이미지 확장",
+          "ai_retouch": "AI 리터칭, 업스케일링 등"
+        }
+      }
+    }
+  },
+  "contact": {
+    "title_prefix": "언제든",
+    "title_highlight": "문의하세요",
+    "subtitle": "무엇을 도와드릴까요?",
+    "types": {
+      "feedback": {
+        "title": "피드백",
+        "description": "사용 경험을 공유해주세요",
+        "placeholder": "어떤 점이 좋았나요? 개선할 점이 있나요?"
+      },
+      "inquiry": {
+        "title": "문의하기",
+        "description": "궁금한 점을 물어보세요",
+        "placeholder": "무엇이든 물어보세요. 빠르게 답변드릴게요!"
+      },
+      "suggestion": {
+        "title": "제안하기",
+        "description": "새로운 아이디어를 제안해주세요",
+        "placeholder": "어떤 기능이 있으면 좋을까요?"
+      }
+    },
+    "form": {
+      "email_label": "이메일",
+      "email_placeholder": "your@email.com",
+      "message_label": "메시지",
+      "buttons": {
+        "back": "뒤로 가기",
+        "send": "보내기",
+        "sending": "전송 중...",
+        "success": "전송 완료!"
+      }
     }
   }
 }

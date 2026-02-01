@@ -3,15 +3,16 @@ import Features from "@/components/features";
 import Footer from "@/components/footer";
 import HeroSection from "@/components/hero";
 import Pricing from "@/components/pricing";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
+  const t = useTranslations("Home");
+
   const stats = [
-    { label: "Image processed", value: 10000, suffix: "+" },
-    { label: "Active Users", value: 500, suffix: "+" },
-    { label: "AI Transformations", value: 45000, suffix: "+" },
-    { label: "User Satisfaction", value: 98, suffix: "%" },
+    { label: t("imageProcessed"), value: 10000, suffix: "+" },
+    { label: t("activeUsers"), value: 500, suffix: "+" },
+    { label: t("aiTransformations"), value: 45000, suffix: "+" },
+    { label: t("userSatisfaction"), value: 98, suffix: "%" },
   ];
 
   return (

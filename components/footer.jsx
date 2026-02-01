@@ -109,7 +109,7 @@ const Footer = () => {
                             {t('description')}
                         </p>
                         <div className="flex items-center gap-4">
-                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                            <a href="https://github.com/h-like" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                                 <Github size={20} />
                             </a>
                             <a href="#" className="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">

@@ -1,191 +1,317 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Bot, Sparkles, Terminal, Cpu, Zap } from 'lucide-react'
-import { Button } from './ui/button'
-import useIntersectionObserver from '@/hooks/use-intersection-observer'
+import useIntersectionObserver from "@/hooks/use-intersection-observer";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Mail,
+  MessageSquare,
+  Lightbulb,
+  Send,
+  CheckCircle2,
+} from "lucide-react";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { useTranslations } from "next-intl";
 
 const Contact = () => {
-    const [ref, isVisible] = useIntersectionObserver();
-    const [message, setMessage] = useState("")
-    const [isAnalyzing, setIsAnalyzing] = useState(false)
-    const [status, setStatus] = useState("IDLE") // IDLE, TYPING, ANALYZING, SUCCESS
+  const [ref, isVisible] = useIntersectionObserver();
+  const [step, setStep] = useState(1); // 1: 선택, 2: 입력
+  const [selectedType, setSelectedType] = useState(null);
+  const [formData, setFormData] = useState({ email: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const t = useTranslations("contact");
 
-    const handleSend = async (e) => {
-        e.preventDefault()
-        if (!message) return
-        
-        setIsAnalyzing(true)
-        setStatus("ANALYZING")
-        
-        // AI 분석 중인 것 같은 효과를 위한 딜레이
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        setStatus("SUCCESS")
-        setIsAnalyzing(false)
-        setMessage("")
-        
-        setTimeout(() => setStatus("IDLE"), 3000)
-    }
+  const contactTypes = [
+    {
+      id: "feedback",
+      title: t("types.feedback.title"),
+      icon: MessageSquare,
+      description: t("types.feedback.description"),
+      color: "from-blue-500 to-cyan-400",
+      placeholder: t("types.feedback.placeholder"),
+    },
+    {
+      id: "inquiry",
+      title: t("types.inquiry.title"),
+      icon: Mail,
+      description: t("types.inquiry.description"),
+      color: "from-purple-500 to-pink-400",
+      placeholder: t("types.inquiry.placeholder"),
+    },
+    {
+      id: "suggestion",
+      title: t("types.suggestion.title"),
+      icon: Lightbulb,
+      description: t("types.suggestion.description"),
+      color: "from-amber-500 to-orange-400",
+      placeholder: t("types.suggestion.placeholder"),
+    },
+  ];
 
-    return (
-        <section ref={ref} className="py-24 relative overflow-hidden mb-9" id="contact">
-            {/* 배경 데코레이션 - 빛나는 오라 효과 */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-            
-            <div className="max-w-6xl mx-auto px-6 relative z-10">
-                <div className="text-center mb-16">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isVisible ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-blue-400 text-sm font-medium mb-6"
+  const handleTypeSelect = (type) => {
+    setSelectedType(type);
+    setTimeout(() => setStep(2), 300);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // 제출 시뮬레이션
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setIsSuccess(true);
+    setIsSubmitting(false);
+
+    // 3초 후 초기화
+    setTimeout(() => {
+      setStep(1);
+      setSelectedType(null);
+      setFormData({ email: "", message: "" });
+      setIsSuccess(false);
+    }, 3000);
+  };
+
+  const handleBack = () => {
+    setStep(1);
+    setSelectedType(null);
+    setFormData({ email: "", message: "" });
+  };
+
+  const selectedOption = contactTypes.find((t) => t.id === selectedType);
+
+  return (
+    <section ref={ref} className="py-32 relative overflow-hidden" id="contact">
+      {/* 배경 그라데이션 */}
+      <div className="" />
+
+      {/* 떠다니는 배경 요소 */}
+      <div className="absolute top-40 left-20 w-72 h-72 bg-blue-500/40 rounded-full blur-3xl animate-pulse" />
+      <div
+        className="absolute top-90 left-85 w-52 h-52 bg-yellow-500/30 rounded-full blur-3xl animate-pulse"
+        style={{ animationDelay: "3s" }}
+      />
+      <div
+        className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse"
+        style={{ animationDelay: "1s" }}
+      />
+
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
+        {/* 헤더 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">
+            {t("title_prefix")}{" "}
+            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              {/* Connect */}
+              {t("title_highlight")}
+            </span>
+          </h2>
+          <p className="text-xl text-slate-400">{t("subtitle")}</p>
+        </motion.div>
+
+        {/* Step 표시 */}
+        <div className="flex justify-center gap-3 mb-12">
+          <div
+            className={`h-1.5 w-16 rounded-full transition-all duration-500 ${step === 1 ? "bg-blue-500" : "bg-slate-700"}`}
+          />
+          <div
+            className={`h-1.5 w-16 rounded-full transition-all duration-500 ${step === 2 ? "bg-blue-500" : "bg-slate-700"}`}
+          />
+        </div>
+
+        {/* 메인 컨텐츠 */}
+        <div className="relative min-h-[500px]">
+          <AnimatePresence mode="wait">
+            {/* Step 1: 타입 선택 */}
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.4 }}
+                className="grid md:grid-cols-3 gap-6"
+              >
+                {contactTypes.map((type, idx) => (
+                  <motion.button
+                    key={type.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={isVisible ? { opacity: 1, y: 0 } : {}}
+                    transition={{ delay: idx * 0.1 }}
+                    onClick={() => handleTypeSelect(type.id)}
+                    className="group relative p-8 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-slate-700 backdrop-blur-xl transition-all duration-300 hover:scale-105 text-left overflow-hidden"
+                  >
+                    {/* 호버 효과 */}
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                    />
+
+                    {/* 아이콘 */}
+                    <div
+                      className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
                     >
-                        <Bot size={16} className="animate-pulse" />
-                        AI Feedback Engine v1.0
-                    </motion.div>
-                    
-                    <motion.h2 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isVisible ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-5xl md:text-5xl font-bold text-white mb-6"
-                    >
-                        Ready to <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-500 bg-clip-text text-transparent">Connect?</span>
-                    </motion.h2>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                        피드백을 남겨주시면 AI 엔진이 분석하여 개발자에게 즉시 전달합니다. 
-                        당신의 아이디어가 Picto의 다음 엔진이 됩니다.
+                      <type.icon className="text-white" size={28} />
+                    </div>
+
+                    {/* 텍스트 */}
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-blue-400 group-hover:to-purple-400 transition-all duration-300">
+                      {type.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      {type.description}
                     </p>
-                </div>
 
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    {/* 왼쪽: AI 상태 인터페이스 */}
-                    <motion.div 
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={isVisible ? { opacity: 1, x: 0 } : {}}
-                        className="space-y-6"
+                    {/* 화살표 */}
+                    <ArrowRight
+                      className="absolute bottom-6 right-6 text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300"
+                      size={20}
+                    />
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+
+            {/* Step 2: 입력 폼 */}
+            {step === 2 && selectedOption && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4 }}
+                className="max-w-2xl mx-auto"
+              >
+                <div className="relative p-8 md:p-12 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-xl overflow-hidden">
+                  {/* 배경 그라데이션 */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${selectedOption.color} opacity-5`}
+                  />
+
+                  {/* 선택한 타입 표시 */}
+                  <div className="flex items-center gap-4 mb-8 relative">
+                    <div
+                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedOption.color} flex items-center justify-center`}
                     >
-                        <div className="p-8 rounded-3xl bg-black/40 border border-white/10 backdrop-blur-xl relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-                                    <Cpu className="text-blue-400" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-bold text-lg">System Status</h4>
-                                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                                        <span className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-                                        Core Neural Network Online
-                                    </div>
-                                </div>
-                            </div>
+                      <selectedOption.icon className="text-white" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">
+                        {selectedOption.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm">
+                        {selectedOption.description}
+                      </p>
+                    </div>
+                  </div>
 
-                            <div className="space-y-4">
-                                {[
-                                    { label: "Processing Power", value: "98%", icon: Zap },
-                                    { label: "Response Latency", value: "24ms", icon: Terminal },
-                                    { label: "Active Nodes", value: "1,024", icon: Sparkles },
-                                ].map((item, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
-                                        <div className="flex items-center gap-3 text-gray-300">
-                                            <item.icon size={18} className="text-blue-400" />
-                                            <span>{item.label}</span>
-                                        </div>
-                                        <span className="text-white font-mono">{item.value}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
+                  {/* 폼 */}
+                  <form onSubmit={handleSubmit} className="space-y-6 relative">
+                    {/* 이메일 */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        {t("form.email_label")}
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        placeholder="your@email.com"
+                        className="w-full px-5 py-4 bg-slate-950/50 border border-slate-700 rounded-2xl text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      />
+                    </div>
 
-                    {/* 오른쪽: 터미널 스타일 입력창 */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={isVisible ? { opacity: 1, x: 0 } : {}}
-                        className="relative"
-                    >
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
-                        <div className="relative bg-[#0a0a0b] border border-white/10 rounded-3xl p-8 overflow-hidden">
-                            {/* 상단 탭 장식 */}
-                            <div className="flex items-center gap-2 mb-6 pb-4 border-bottom border-white/5">
-                                <div className="w-3 h-3 rounded-full bg-red-500/50" />
-                                <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                                <div className="w-3 h-3 rounded-full bg-green-500/50" />
-                                <span className="ml-2 text-xs font-mono text-gray-500 uppercase tracking-widest">New Transmission</span>
-                            </div>
+                    {/* 메시지 */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        {t("form.message_label")}
+                      </label>
+                      <textarea
+                        required
+                        value={formData.message}
+                        onChange={(e) =>
+                          setFormData({ ...formData, message: e.target.value })
+                        }
+                        placeholder={selectedOption.placeholder}
+                        rows={6}
+                        className="w-full px-5 py-4 bg-slate-950/50 border border-slate-700 rounded-2xl text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                      />
+                    </div>
 
-                            <form onSubmit={handleSend} className="space-y-6">
-                                <div className="relative">
-                                    <textarea
-                                        value={message}
-                                        onChange={(e) => {
-                                            setMessage(e.target.value)
-                                            if (status !== "SUCCESS") setStatus(e.target.value ? "TYPING" : "IDLE")
-                                        }}
-                                        placeholder="이곳에 피드백이나 문의 내용을 입력하세요..."
-                                        className="w-full h-48 bg-white/5 border border-white/10 rounded-2xl p-6 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none font-mono"
-                                    />
-                                    
-                                    {/* 실시간 상태 표시 */}
-                                    <div className="absolute bottom-4 right-4 text-[10px] font-mono text-blue-500/70 uppercase">
-                                        {status === "TYPING" && ">> User input detected..."}
-                                        {status === "ANALYZING" && ">> Running neural analysis..."}
-                                        {status === "SUCCESS" && ">> Data transmitted successfully!"}
-                                    </div>
-                                </div>
+                    {/* 버튼 그룹 */}
+                    <div className="flex gap-4 pt-4">
+                      <Button
+                        type="button"
+                        onClick={handleBack}
+                        variant="outline"
+                        className="flex-1 h-14 rounded-2xl border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                        disabled={isSubmitting}
+                      >
+                        {t("form.buttons.back")}
+                      </Button>
 
-                                <Button 
-                                    type="submit"
-                                    disabled={isAnalyzing || !message}
-                                    variant="primary"
-                                    size="xl"
-                                    className="w-full group relative overflow-hidden"
-                                >
-                                    <AnimatePresence mode="wait">
-                                        {isAnalyzing ? (
-                                            <motion.div 
-                                                key="loading"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                Analyzing Message...
-                                            </motion.div>
-                                        ) : status === "SUCCESS" ? (
-                                            <motion.div 
-                                                key="success"
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <Sparkles size={18} />
-                                                Sent Successfully
-                                            </motion.div>
-                                        ) : (
-                                            <motion.div 
-                                                key="default"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                className="flex items-center gap-2"
-                                            >
-                                                Execute Transmission
-                                                <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </Button>
-                            </form>
-                        </div>
-                    </motion.div>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting || isSuccess}
+                        className={`flex-1 h-14 rounded-2xl bg-gradient-to-r ${selectedOption.color} text-white font-medium hover:opacity-90 transition-all disabled:opacity-50 relative overflow-hidden group`}
+                      >
+                        <AnimatePresence mode="wait">
+                          {isSubmitting ? (
+                            <motion.div
+                              key="loading"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="flex items-center gap-2"
+                            >
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              {t("form.buttons.sending")}
+                            </motion.div>
+                          ) : isSuccess ? (
+                            <motion.div
+                              key="success"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="flex items-center gap-2"
+                            >
+                              <CheckCircle2 size={20} />
+                              {t("form.buttons.success")}
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="default"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex items-center gap-2"
+                            >
+                              {t("form.buttons.send")}
+                              <Send
+                                size={18}
+                                className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Button>
+                    </div>
+                  </form>
                 </div>
-            </div>
-        </section>
-    )
-}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
+  );
+};
 
-export default Contact
+export default Contact;

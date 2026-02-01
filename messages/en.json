@@ -18,7 +18,15 @@
       "demo": "Watch Demo"
     }
   },
+  "Home": {
+    "imageProcessed": "Images Processed",
+    "activeUsers": "Active Users",
+    "aiTransformations": "AI Transformations",
+    "userSatisfaction": "User Satisfaction"
+  },
   "features": {
+    "title": "Powerful AI Features",
+    "subtitle": "Everything you need to create, edit, and enhance, images with professional-grade tools powered by cutting-edge AI technology",
     "smart_crop": {
       "title": "Smart Crop & Resize",
       "description": "Interactive cropping with aspect ratio constraints and intelligent resizing that preserves image quality across any dimension."
@@ -42,6 +50,73 @@
     "upscaler": {
       "title": "AI Upscaler",
       "description": "Enhance image resolution up to 4x using AI upscaling technology that preserves details and reduces artifacts."
+    }
+  },
+  "pricing": {
+    "title_prefix": "Simple",
+    "title_highlight": "Pricing",
+    "description": "Start free and upgrade when you need more power. No hidden fees, cancel anytime.",
+    "most_popular": "Most Popular",
+    "per_month": "/month",
+    "current_plan": "Current Plan",
+    "error_message": "Something went wrong",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "button": "Get Started Free",
+        "features": {
+          "projects": "3 projects maximum",
+          "exports": "20 exports per month",
+          "crop_resize": "Basic crop & resize",
+          "color_adjust": "Color adjustments",
+          "text_tool": "Text Tool"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "button": "Upgrade to Pro",
+        "features": {
+          "projects": "Unlimited projects",
+          "exports": "Unlimited exports",
+          "tools": "All Editing Tools",
+          "ai_bg": "AI Background Remover",
+          "ai_extend": "AI Image Extender",
+          "ai_retouch": "AI Retouch, Upscaler and more"
+        }
+      }
+    }
+  },
+  "contact": {
+    "title_prefix": "Let's",
+    "title_highlight": "Connect",
+    "subtitle": "How can we help you today?",
+    "types": {
+      "feedback": {
+        "title": "Feedback",
+        "description": "Share your experience",
+        "placeholder": "What did you like? Any room for improvement?"
+      },
+      "inquiry": {
+        "title": "Inquiry",
+        "description": "Ask us anything",
+        "placeholder": "Ask away! We'll reply shortly."
+      },
+      "suggestion": {
+        "title": "Suggestion",
+        "description": "Propose new ideas",
+        "placeholder": "What features would you like to see?"
+      }
+    },
+    "form": {
+      "email_label": "Email",
+      "email_placeholder": "your@email.com",
+      "message_label": "Message",
+      "buttons": {
+        "back": "Back",
+        "send": "Send Message",
+        "sending": "Sending...",
+        "success": "Sent Successfully!"
+      }
     }
   }
 }
