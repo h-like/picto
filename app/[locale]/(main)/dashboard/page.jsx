@@ -3,9 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { useConvexQuery } from "@/hooks/use-convex-query";
-import { useQuery } from "convex/react";
 import { Plus, Sparkle } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { BarLoader } from "react-spinners";
 import { NewProjectModal } from "./_components/new-project-modal";
 import ProjectGrid from "./_components/project-grid";
@@ -16,8 +15,6 @@ const Dashboard = () => {
   const { data: projects, isLoading } = useConvexQuery(
     api.projects.getUserProjects,
   );
-
-  console.log(projects);
 
   return (
     <div className="min-h-screen pt-32 pb-16">
