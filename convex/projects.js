@@ -3,18 +3,39 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
 // Get all projects for the current user
-export const getUserProjects = query({
-  handler: async (ctx) => {
-    const user = await ctx.runQuery(internal.users.getCurrentUser);
+// export const getUserProjects = query({
+//   handler: async (ctx) => {
+//     const user = await ctx.runQuery(internal.users.getCurrentUser);
 
-    // Get user's projects, ordered by most recently updated
-    const projects = await ctx.db
+//     // Get user's projects, ordered by most recently updated
+//     const projects = await ctx.db
+//       .query("projects")
+//       .withIndex("by_user_updated", (q) => q.eq("userId", user._id))
+//       .order("desc")
+//       .collect();
+
+//     return projects;
+//   },
+// });
+
+export const getUserProjects = query({
+  args: { folderId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
+    if (!user) return;
+    // 특정 폴더를 선택했을 경우
+    if (args.folderId) {
+      return await ctx.db
+        .query("projects")
+        .withIndex("by_folder", (q) => q.eq("folderId", args.folderId))
+        .collect();
+    }
+    // 전체 보기
+    return await ctx.db
       .query("projects")
       .withIndex("by_user_updated", (q) => q.eq("userId", user._id))
       .order("desc")
       .collect();
-
-    return projects;
   },
 });
 
@@ -41,7 +62,7 @@ export const create = mutation({
 
       if (projectCount.length >= 3) {
         throw new Error(
-          "Free plan limited to 3 projects. Upgrade to Pro for unlimited projects."
+          "Free plan limited to 3 projects. Upgrade to Pro for unlimited projects.",
         );
       }
     }
@@ -98,7 +119,7 @@ export const deleteProject = mutation({
   },
 });
 
-// Get 프로젝트 가져오기 아이디 확인 
+// Get 프로젝트 가져오기 아이디 확인
 export const getProject = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -165,6 +186,33 @@ export const updateProject = mutation({
     // Update user's last active time
     await ctx.db.patch(user._id, {
       lastActiveAt: Date.now(),
+    });
+
+    return args.projectId;
+  },
+});
+
+// 프로젝트 폴더 이동
+export const moveProject = mutation({
+  args: {
+    projectId: v.id("projects"),
+    folderId: v.optional(v.id("folders")), // null이면 'All Projects' (폴더 없음) 상태
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    if (!user || project.userId !== user._id) {
+      throw new Error("Access denied");
+    }
+
+    await ctx.db.patch(args.projectId, {
+      folderId: args.folderId,
+      updatedAt: Date.now(),
     });
 
     return args.projectId;

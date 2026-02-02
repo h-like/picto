@@ -107,7 +107,7 @@ const Pricing = () => {
   const plans = [
     {
       id: "free_user",
-      plan: t("plans.free.name"),
+      plan: "free",
       price: 0,
       features: [
         t("plans.free.features.projects"),
