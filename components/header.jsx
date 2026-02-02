@@ -28,7 +28,7 @@ const Header = () => {
         <Link href="/" className="mr-10 md:mr-20">
           <Image
             src="/logo-3-big.png"
-            alt="Pixxel Logo"
+            alt="Picto Logo"
             className="min-w-24 object-cover"
             width={96}
             height={24}

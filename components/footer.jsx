@@ -6,7 +6,6 @@ import { Github, Globe, ExternalLink, Layers, Cpu, ShieldCheck, Zap } from 'luci
 
 /**
  * Picto Global Footer
- * 전체 앱의 i18n 상태를 제어하고 프로젝트 정보를 제공하는 미래지향적 푸터입니다.
  */
 const Footer = () => {
     // 현재 URL에서 locale 추출 (기본값: ko)
@@ -33,7 +32,8 @@ const Footer = () => {
             powered: "기술 스택",
             lang: "언어 설정",
             status: "운영 상태",
-            ready: "배포 준비 완료"
+            ready: "배포 준비 완료",
+            production: "배포"
         },
         en: {
             features: "Features",
@@ -45,7 +45,8 @@ const Footer = () => {
             powered: "Powered By",
             lang: "Language",
             status: "System Status",
-            ready: "PRODUCTION READY"
+            ready: "PRODUCTION READY",
+            production: "PRODUCTION"
         }
     }
 
