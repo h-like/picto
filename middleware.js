@@ -12,22 +12,22 @@ const isProtectedRoutes = createRouteMatcher(["/dashboard(.*)", "/editor(.*)"])
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth()
 
-  if(!userId && isProtectedRoutes(req)){
-    // const { redirectToSignIn } = await auth()
+  if(req.nextUrl.pathname.startsWith('/api') || req.nextUrl.pathname.startsWith('/trpc')){
+    return NextResponse.next();
+  }
 
-    // return redirectToSignIn()
+  if(!userId && isProtectedRoutes(req)){
     return (await auth()).redirectToSignIn();
   }
 
   return intlMiddleware(req);
-  // return NextResponse.next()
 })
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    // 정적 파일 제외
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
+    // API 경로도 반드시 Matcher에 "포함"되어야 Clerk이 작동
     '/(api|trpc)(.*)',
   ],
 }
