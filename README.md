@@ -30,35 +30,6 @@
 
 ---
 
-## 💡 기술적 의사결정 (Technical Decisions)
-
-### 1. Convex: 끊김 없는(Seamless) 편집 경험을 위한 실시간 동기화
-이미지 에디터의 핵심은 사용자의 작업(이동, 리사이징, 필터 등)이 지연 없이 즉각적으로 화면에 반영되는 것입니다.
-* **Why Convex?** REST API를 폴링(Polling)하거나 WebSocket 서버를 직접 구축하는 오버헤드 없이, Convex의 **구독(Subscription)** 모델을 활용하여 데이터 변경 사항을 UI에 실시간으로 동기화했습니다.
-* **Optimistic Updates:** 사용자가 편집 버튼을 누르는 즉시 반응하도록 하여, 네트워크 대기 시간을 느끼지 못하는 쾌적한 사용성을 구현했습니다.
-
-### 2. Next.js (App Router): SEO와 초기 로딩 최적화
-웹 기반 서비스로서 검색 엔진 유입(Organic Traffic)과 초기 이탈 방지가 중요했습니다.
-* **SSR (Server Side Rendering):** 마케팅 페이지와 대시보드에 SSR을 적용하여 검색 엔진 최적화(SEO)를 강화했습니다.
-* **Hybrid Rendering:** 상호작용이 많은 에디터 캔버스 부분은 `'use client'`를 명시하여 브라우저 리소스를 효율적으로 활용하고, 정적인 부분은 서버 컴포넌트로 처리하여 **TTV(Time To View)**를 단축했습니다.
-
----
-
-## 🔥 기술적 챌린지 (Technical Challenges)
-
-### 🎨 캔버스 상태 관리: React(선언형)와 Fabric.js(명령형)의 동기화
-React의 상태 관리 패러다임과 HTML5 Canvas를 직접 조작하는 Fabric.js 간의 '싱크(Sync)'를 맞추는 것이 가장 큰 과제였습니다.
-
-**1. Context API 기반의 브리지(Bridge) 구축**
-* `useCanvas` 커스텀 훅을 통해 Canvas 인스턴스를 전역에서 관리하며, 툴바 컴포넌트들이 캔버스 객체에 접근할 수 있도록 제어권을 중앙화했습니다.
-* **반응형 뷰포트(Responsive Viewport):** `Zoom`과 `Scale`을 동적으로 계산하여, 디바이스 화면 크기에 상관없이 원본 이미지의 고해상도 좌표계를 유지하며 편집할 수 있도록 구현했습니다.
-
-**2. 자동 저장 최적화 (Debouncing)**
-* **문제:** 객체를 드래그할 때마다 발생하는 수백 번의 `object:modified` 이벤트가 DB에 과도한 쓰기 요청을 유발했습니다.
-* **해결:** `setTimeout`을 활용한 **2초 디바운싱(Debouncing)** 로직을 구현하여, 사용자의 조작이 멈춘 뒤에만 상태를 저장함으로써 네트워크 비용을 획기적으로 절감했습니다.
-
----
-
 ## 📂 폴더 구조 (Folder Structure)
 
 ```bash
