@@ -2,8 +2,7 @@
 
 > **Next.js, Convex, 그리고 AI를 활용한 실시간 웹 이미지 에디터 서비스**
 
-![Project Banner](public/logo-3-big.png) 
-*(프로젝트 배너나 실행 화면 GIF가 있다면 여기에 넣어주세요)*
+![Project Banner](public/preview.gif) 
 
 **[🚀 배포 링크 바로가기 (Live Demo)](https://picto-image-editing.vercel.app)**
 
@@ -133,5 +132,5 @@ npm run dev
 
 브라우저에서 `http://localhost:3000`으로 접속하여 확인하세요!
 
-```
+
 
