@@ -2,25 +2,14 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
-// Get all projects for the current user
-// export const getUserProjects = query({
-//   handler: async (ctx) => {
-//     const user = await ctx.runQuery(internal.users.getCurrentUser);
-
-//     // Get user's projects, ordered by most recently updated
-//     const projects = await ctx.db
-//       .query("projects")
-//       .withIndex("by_user_updated", (q) => q.eq("userId", user._id))
-//       .order("desc")
-//       .collect();
-
-//     return projects;
-//   },
-// });
-
 export const getUserProjects = query({
   args: { folderId: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return [];
+    }
+
     const user = await ctx.runQuery(internal.users.getCurrentUser);
     if (!user) return;
     // 특정 폴더를 선택했을 경우
