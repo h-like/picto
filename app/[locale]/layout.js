@@ -36,7 +36,7 @@ export default async function LocaleLayout({ children, params }) {
         enableSystem
         disableTransitionOnChange
       >
-        <ClerkProvider appearance={{ baseTheme: shadesOfPurple }}>
+        <ClerkProvider appearance={{ baseTheme: shadesOfPurple }} afterSignOutUrl="/">
           <ConvexClientProvider>
             <Header />
 
