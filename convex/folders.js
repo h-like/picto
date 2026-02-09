@@ -5,6 +5,9 @@ import { internal } from "./_generated/api";
 // 폴더 목록 가져오기
 export const get = query({
   handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
     const user = await ctx.runQuery(internal.users.getCurrentUser);
     if (!user) return [];
 
